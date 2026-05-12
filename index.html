@@ -865,6 +865,23 @@
               <span>📋 정책 메모 — 노션 연결 시 관련 정책 항목 포함</span>
             </div>
           </div>
+          <!-- 어노테이션 표시 방식 선택 -->
+          <div style="margin-top:12px;">
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px; letter-spacing:0.3px;">📝 기능 어노테이션 표시 방식</div>
+            <div class="output-types">
+              <label class="output-chip" id="chip-anno-panel">
+                <input type="radio" name="htmlAnnoStyle" value="panel" checked onchange="syncChip(this)" />
+                <span class="dot"></span> 한 곳에 모아서 표시
+              </label>
+              <label class="output-chip" id="chip-anno-tooltip">
+                <input type="radio" name="htmlAnnoStyle" value="tooltip" onchange="syncChip(this)" />
+                <span class="dot"></span> 번호 클릭 시 팝업으로 표시
+              </label>
+            </div>
+            <div id="annoStyleDesc" style="font-size:12px; color:var(--text-dim); margin-top:8px; line-height:1.6; padding:8px 12px; background:var(--surface2); border-radius:var(--radius-sm);">
+              화면 하단에 어노테이션 패널을 고정 배치합니다. 모든 항목을 한눈에 볼 수 있습니다.
+            </div>
+          </div>
         </div>
 
         <div id="customToolBox" style="display:none; margin-bottom:10px;">
@@ -1378,6 +1395,17 @@ npx -y @nxui/mcp
       }
     }
 
+    // ── HTML 어노테이션 방식 설명 토글 ──
+    document.addEventListener('change', e => {
+      if (e.target.name === 'htmlAnnoStyle') {
+        const desc = document.getElementById('annoStyleDesc');
+        if (!desc) return;
+        desc.textContent = e.target.value === 'tooltip'
+          ? '와이어프레임의 번호 뱃지를 클릭하면 해당 요소 설명이 팝업(툴팁)으로 나타납니다. 화면을 더 넓게 볼 수 있습니다.'
+          : '화면 하단에 어노테이션 패널을 고정 배치합니다. 모든 항목을 한눈에 볼 수 있습니다.';
+      }
+    });
+
     // ── Prompt generation ──
     function generatePrompt() {
       const name = document.getElementById('projectName').value.trim();
@@ -1448,6 +1476,7 @@ npx -y @nxui/mcp
       const drawTool = drawToolEl ? drawToolEl.value : 'figma';
       const isNxui   = drawTool === 'nxui';
       const isHtml   = drawTool === 'html';
+      const htmlAnnoStyle = document.querySelector('input[name="htmlAnnoStyle"]:checked')?.value || 'panel';
       const isCustom = drawTool === 'custom';
       const customToolName = document.getElementById('customToolName').value.trim() || '지정 도구';
 
@@ -1687,11 +1716,21 @@ npx -y @nxui/mcp
           prompt += `   - 번호별 설명 항목: 번호 / 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
           prompt += `   - 에러·빈 화면에서 기본 대비 달라진 요소는 별도 섹션으로 구분하여 동일 프레임 내 하단에 추가 (번호는 기본 화면 번호 이어서 부여)\n`;
         } else if (outputs.includes('annotation') && isHtml) {
-          prompt += `4. 기능 어노테이션 — 각 섹션 카드 우측에 번호 레이블 + 설명 테이블 배치\n`;
-          prompt += `   - **번호 부여 방식**: 와이어프레임 내 각 인터랙티브 요소에 ①②③… 형태의 번호 뱃지를 요소 우상단에 겹쳐 표기\n`;
-          prompt += `   - **카드 우측 테이블과 번호 일치**: 와이어프레임의 번호와 우측 설명 테이블의 행 번호가 정확히 대응되어야 함\n`;
-          prompt += `   - 번호별 설명 항목: 번호 / 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
-          prompt += `   - 에러·빈 화면에서 기본 화면과 달라진 요소에도 별도 어노테이션 추가 (번호 이어서 부여)\n`;
+          if (htmlAnnoStyle === 'tooltip') {
+            prompt += `4. 기능 어노테이션 — **번호 클릭 시 팝업(툴팁) 방식**\n`;
+            prompt += `   - 와이어프레임 내 각 인터랙티브 요소 우상단에 ①②③… 번호 뱃지를 겹쳐 표기\n`;
+            prompt += `   - 번호 뱃지 클릭 시 해당 요소 설명이 팝업(툴팁)으로 나타나도록 구현 (CSS/JS)\n`;
+            prompt += `   - 팝업 내용: 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
+            prompt += `   - 팝업은 화면 밖으로 잘리지 않도록 위치를 자동 조정, 다른 곳 클릭 시 닫힘\n`;
+            prompt += `   - 에러·빈 화면에서 기본 화면과 달라진 요소에도 동일 방식으로 어노테이션 추가 (번호 이어서 부여)\n`;
+          } else {
+            prompt += `4. 기능 어노테이션 — **화면 하단 고정 패널 방식**\n`;
+            prompt += `   - 와이어프레임 내 각 인터랙티브 요소 우상단에 ①②③… 번호 뱃지를 겹쳐 표기\n`;
+            prompt += `   - 화면 하단에 어노테이션 패널을 고정 배치, 번호와 설명을 테이블로 정리\n`;
+            prompt += `   - 번호별 설명 항목: 번호 / 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
+            prompt += `   - 패널의 번호와 와이어프레임의 번호가 정확히 대응되어야 함\n`;
+            prompt += `   - 에러·빈 화면에서 기본 화면과 달라진 요소에도 별도 어노테이션 추가 (번호 이어서 부여)\n`;
+          }
         }
         if (outputs.includes('policy')) {
           prompt += `5. 정책 메모 — 노션 문서에서 이 화면에 적용되는 정책 항목을 \`[정책]\` 태그로 표시\n`;
