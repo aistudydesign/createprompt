@@ -981,7 +981,7 @@ pnpm install @nxui/core</pre>
       </div>
       <label class="figma-toggle" for="figmaToggle">
         <div class="toggle-switch">
-          <input type="checkbox" id="figmaToggle" onchange="toggleFigma()" />
+          <input type="checkbox" id="figmaToggle" onchange="toggleFigma()" checked />
           <div class="toggle-track"></div>
           <div class="toggle-thumb"></div>
         </div>
@@ -1984,10 +1984,7 @@ npx -y @nxui/mcp
       const notionOn = document.getElementById('notionToggle').checked;
       // 결과 프롬프트가 출력된 상태면 dirty
       const hasResult = document.getElementById('resultCard').classList.contains('visible');
-      // 피그마 위치 지정이 켜져 있으면 dirty
-      const figmaOn = document.getElementById('figmaToggle').checked;
-
-      btn.classList.toggle('dirty', hasText || notionOn || hasResult || figmaOn);
+      btn.classList.toggle('dirty', hasText || notionOn || hasResult);
     }
 
     // 폼 전체에 이벤트 위임
@@ -1995,6 +1992,7 @@ npx -y @nxui/mcp
     document.addEventListener('change', checkDirty);
 
     // ── Init ──
+    toggleFigma(); // 피그마 위치 지정 기본값 ON
     addMenu();
     addMenu();
     addNotionPage('결제 정책', '', '');
