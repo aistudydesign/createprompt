@@ -84,6 +84,14 @@
       transition: border-color 0.2s;
     }
     .section:focus-within { border-color: rgba(124,106,247,0.5); }
+    .section-disabled {
+      opacity: 0.38;
+      pointer-events: none;
+      user-select: none;
+    }
+    .section-disabled .section-number {
+      background: var(--text-dim);
+    }
 
     .section-header {
       display: flex;
@@ -973,7 +981,7 @@ pnpm install @nxui/core</pre>
     </div>
 
     <!-- Section 5: 피그마 위치 지정 -->
-    <div class="section">
+    <div class="section" id="section5">
       <div class="section-header">
         <div class="section-number">5</div>
         <div class="section-title">피그마 위치 지정</div>
@@ -1351,6 +1359,23 @@ npx -y @nxui/mcp
       document.getElementById('htmlInfoBox').style.display   = val === 'html'   ? 'block' : 'none';
       document.getElementById('customToolBox').style.display = val === 'custom' ? 'block' : 'none';
       if (val === 'custom') document.getElementById('customToolName').focus();
+
+      // Section 5: HTML 선택 시 피그마 위치 지정 disabled
+      const section5 = document.getElementById('section5');
+      const figmaToggle = document.getElementById('figmaToggle');
+      if (val === 'html') {
+        section5.classList.add('section-disabled');
+        if (figmaToggle.checked) {
+          figmaToggle.checked = false;
+          toggleFigma();
+        }
+      } else {
+        section5.classList.remove('section-disabled');
+        if (!figmaToggle.checked) {
+          figmaToggle.checked = true;
+          toggleFigma();
+        }
+      }
     }
 
     // ── Prompt generation ──
