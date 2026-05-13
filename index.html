@@ -828,11 +828,11 @@
         <label>그리기 도구 선택 <span class="required">*</span></label>
         <div class="output-types" style="margin-bottom:12px">
           <label class="output-chip" id="chip-tool-html">
-            <input type="radio" name="drawTool" value="html" onchange="onDrawToolChange()" />
+            <input type="radio" name="drawTool" value="html" checked onchange="onDrawToolChange()" />
             <span class="dot"></span> 🌐 HTML 파일
           </label>
           <label class="output-chip" id="chip-tool-figma">
-            <input type="radio" name="drawTool" value="figma" checked onchange="onDrawToolChange()" />
+            <input type="radio" name="drawTool" value="figma" onchange="onDrawToolChange()" />
             <span class="dot"></span> 🖼 Figma MCP
           </label>
           <label class="output-chip" id="chip-tool-custom">
@@ -916,11 +916,11 @@
         <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px; line-height:1.6;">디자인 시스템 컴포넌트를 사용하려면 UI MCP를 선택하세요.</div>
         <div class="output-types" style="margin-bottom:12px">
           <label class="output-chip" id="chip-uimcp-nxui">
-            <input type="radio" name="uiMcp" value="nxui" onchange="onUiMcpChange()" />
+            <input type="radio" name="uiMcp" value="nxui" checked onchange="onUiMcpChange()" />
             <span class="dot"></span> ✦ NXUI MCP <span style="font-size:11px;opacity:0.7;">(넥슨 디자인 시스템)</span>
           </label>
           <label class="output-chip" id="chip-uimcp-none">
-            <input type="radio" name="uiMcp" value="none" checked onchange="onUiMcpChange()" />
+            <input type="radio" name="uiMcp" value="none" onchange="onUiMcpChange()" />
             <span class="dot"></span> 사용 안 함
           </label>
           <label class="output-chip" id="chip-uimcp-custom">
@@ -933,21 +933,25 @@
         <div id="uiMcpNxuiBox" style="display:none;">
           <div style="background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.3); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px;">
             <div style="font-size:13px; font-weight:600; color:#f87171; margin-bottom:4px;">⚠ 프롬프트 입력 전 NXUI MCP를 먼저 연결해 주세요</div>
-            <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
-              아래 설치 가이드를 참고해 연결 완료 후 프롬프트를 붙여넣으세요.
-            </div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">아래 설치 가이드를 참고해 연결 완료 후 프롬프트를 붙여넣으세요.</div>
           </div>
-          <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; display:flex; flex-direction:column; gap:16px;">
-            <div>
-              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">① NXUI MCP 실행</div>
-              <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">생성된 프롬프트에 연결 지시가 자동 포함됩니다. Claude가 아래 명령어로 MCP를 실행합니다.</div>
-              <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;">npx -y @nxui/mcp</pre>
-            </div>
-            <div>
-              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">② NXUI 패키지 설치 (프로젝트에 미설치 시)</div>
-              <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">프로젝트 루트에 <code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;">.npmrc</code> 파일을 만들고 아래 내용을 추가하세요.</div>
-              <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0 0 8px;overflow-x:auto;">@nxui:registry=https://nexus.nexon.com/repository/nxui-npm-release/</pre>
-              <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">// npm
+          <!-- 접기/펼치기 가이드 -->
+          <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden;">
+            <button onclick="toggleNxuiGuide(this)" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:13px; font-weight:600;">
+              <span>📋 NXUI MCP 설치 가이드</span>
+              <span id="nxuiGuideArrow" style="font-size:11px; transition:transform 0.2s;">▼</span>
+            </button>
+            <div id="nxuiGuideBody" style="display:none; padding:0 16px 16px; flex-direction:column; gap:16px;">
+              <div>
+                <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">① NXUI MCP 실행</div>
+                <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">생성된 프롬프트에 연결 지시가 자동 포함됩니다. Claude가 아래 명령어로 MCP를 실행합니다.</div>
+                <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;">npx -y @nxui/mcp</pre>
+              </div>
+              <div>
+                <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">② NXUI 패키지 설치 (프로젝트에 미설치 시)</div>
+                <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">프로젝트 루트에 <code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;">.npmrc</code> 파일을 만들고 아래 내용을 추가하세요.</div>
+                <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0 0 8px;overflow-x:auto;">@nxui:registry=https://nexus.nexon.com/repository/nxui-npm-release/</pre>
+                <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">// npm
 npm install @nxui/core
 
 // yarn
@@ -955,11 +959,11 @@ yarn add @nxui/core
 
 // pnpm
 pnpm install @nxui/core</pre>
-            </div>
-            <div>
-              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">③ 스타일 설정</div>
-              <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">프로젝트의 root CSS 파일에 추가하세요.</div>
-              <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">@layer reset, core, tailwind;
+              </div>
+              <div>
+                <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">③ 스타일 설정</div>
+                <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">프로젝트의 root CSS 파일에 추가하세요.</div>
+                <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">@layer reset, core, tailwind;
 
 @layer reset {
   @import '@nxui/core/reset.css';
@@ -973,12 +977,13 @@ pnpm install @nxui/core</pre>
   @import 'tailwindcss/theme.css';
   @import 'tailwindcss/utilities.css';
 }</pre>
-            </div>
-            <div style="border-top:1px solid var(--border); padding-top:14px;">
-              <div style="font-size:12px; color:var(--text-dim); margin-bottom:10px; line-height:1.5;">위 가이드를 Claude에 전달해 설치를 자동으로 진행시킬 수 있어요.</div>
-              <button class="btn-action" id="btnCopyNxuiInstall" onclick="copyNxuiInstallPrompt(this)" style="width:100%; justify-content:center; padding:9px 0; font-size:13px;">
-                📋 NXUI MCP 설치 지시 프롬프트 복사
-              </button>
+              </div>
+              <div style="border-top:1px solid var(--border); padding-top:14px;">
+                <div style="font-size:12px; color:var(--text-dim); margin-bottom:10px; line-height:1.5;">위 가이드를 Claude에 전달해 설치를 자동으로 진행시킬 수 있어요.</div>
+                <button class="btn-action" id="btnCopyNxuiInstall" onclick="copyNxuiInstallPrompt(this)" style="width:100%; justify-content:center; padding:9px 0; font-size:13px;">
+                  📋 NXUI MCP 설치 지시 프롬프트 복사
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1390,6 +1395,15 @@ npx -y @nxui/mcp
         section5.classList.remove('section-disabled');
         if (!figmaToggle.checked) { figmaToggle.checked = true; toggleFigma(); }
       }
+    }
+
+    // ── NXUI 가이드 접기/펼치기 ──
+    function toggleNxuiGuide(btn) {
+      const body  = document.getElementById('nxuiGuideBody');
+      const arrow = document.getElementById('nxuiGuideArrow');
+      const isOpen = body.style.display === 'flex';
+      body.style.display = isOpen ? 'none' : 'flex';
+      arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
     }
 
     // ── UI MCP 선택 ──
@@ -2084,7 +2098,8 @@ npx -y @nxui/mcp
     document.addEventListener('change', checkDirty);
 
     // ── Init ──
-    toggleFigma(); // 피그마 위치 지정 기본값 ON
+    onDrawToolChange(); // HTML 기본값 → Section5 비활성화 + uiMcpSection 표시
+    onUiMcpChange();    // NXUI 기본값 → uiMcpNxuiBox 표시
     addMenu();
     addMenu();
     addNotionPage('결제 정책', '', '');
