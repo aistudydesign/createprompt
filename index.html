@@ -835,10 +835,6 @@
             <input type="radio" name="drawTool" value="figma" checked onchange="onDrawToolChange()" />
             <span class="dot"></span> 🖼 Figma MCP
           </label>
-          <label class="output-chip" id="chip-tool-nxui">
-            <input type="radio" name="drawTool" value="nxui" onchange="onDrawToolChange()" />
-            <span class="dot"></span> ✦ NXUI MCP <span style="font-size:11px;opacity:0.7;">(넥슨 디자인 시스템)</span>
-          </label>
           <label class="output-chip" id="chip-tool-custom">
             <input type="radio" name="drawTool" value="custom" onchange="onDrawToolChange()" />
             <span class="dot"></span> ✏ 기타
@@ -890,35 +886,65 @@
             입력한 도구 이름으로 Claude가 설치 방법을 직접 검색해 연결한 뒤 기획서를 그립니다.
           </div>
         </div>
-        <div id="nxuiInfoBox" style="display:none;">
+        <div id="nxuiInfoBox" style="display:none;"></div>
+
+        <!-- Figma MCP 안내 (Figma 탭 선택 시만 표시) -->
+        <div id="figmaInfoBox">
           <!-- 상단 공지 -->
           <div style="background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.3); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px;">
             <div style="font-size:13px; font-weight:600; color:#f87171; margin-bottom:4px;">⚠ 프롬프트 입력 전 MCP를 먼저 연결해 주세요</div>
             <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
-              Claude에 <strong style="color:var(--text)">Figma MCP</strong>와 <strong style="color:var(--text)">NXUI MCP</strong>가 모두 연결되어 있어야 정상 작동합니다.<br/>
-              아래 설치 가이드를 참고해 연결 완료 후 프롬프트를 붙여넣으세요.
+              Claude에 <strong style="color:var(--text)">Figma MCP</strong>가 연결되어 있어야 정상 작동합니다.<br/>
+              아래 방법으로 설치 후 프롬프트를 붙여넣으세요.
             </div>
           </div>
-          <div style="background:var(--surface2); border:1px solid rgba(124,106,247,0.25); border-radius:var(--radius-sm); padding:16px; display:flex; flex-direction:column; gap:16px;">
+          <!-- 설치 가이드 -->
+          <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px;">🖼 Figma MCP 설치</div>
+            <div style="font-size:13px; color:var(--text-dim); line-height:1.8;">
+              Claude에서 <code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;color:var(--text-muted);">/mcp</code> 명령어를 입력하고
+              <strong style="color:var(--text-muted)">Figma</strong>를 검색해 설치하세요.
+            </div>
+          </div>
 
-            <!-- MCP 실행 -->
-            <div>
-              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">① NXUI MCP 실행</div>
-              <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">
-                생성된 프롬프트에 연결 지시가 자동 포함됩니다. Claude가 아래 명령어로 MCP를 실행합니다.
-              </div>
-              <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;">npx -y @nxui/mcp</pre>
+          <!-- UI MCP 선택 -->
+          <div style="border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; background:var(--surface2);">
+            <div style="font-size:13px; font-weight:700; color:var(--text); margin-bottom:4px;">UI MCP 선택 <span style="font-size:11px; font-weight:400; color:var(--text-dim);">선택사항</span></div>
+            <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.6;">디자인 시스템 컴포넌트를 사용하려면 UI MCP를 선택하세요.</div>
+            <div class="output-types" style="margin-bottom:12px">
+              <label class="output-chip" id="chip-uimcp-none">
+                <input type="radio" name="uiMcp" value="none" checked onchange="onUiMcpChange()" />
+                <span class="dot"></span> 사용 안 함
+              </label>
+              <label class="output-chip" id="chip-uimcp-nxui">
+                <input type="radio" name="uiMcp" value="nxui" onchange="onUiMcpChange()" />
+                <span class="dot"></span> ✦ NXUI MCP <span style="font-size:11px;opacity:0.7;">(넥슨 디자인 시스템)</span>
+              </label>
+              <label class="output-chip" id="chip-uimcp-custom">
+                <input type="radio" name="uiMcp" value="custom" onchange="onUiMcpChange()" />
+                <span class="dot"></span> ✏ 기타
+              </label>
             </div>
 
-            <!-- 패키지 설치 -->
-            <div>
-              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">② NXUI 패키지 설치 (프로젝트에 미설치 시)</div>
-              <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">
-                프로젝트 루트에 <code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;">.npmrc</code> 파일을 만들고 아래 내용을 추가하세요.
+            <!-- NXUI 상세 안내 -->
+            <div id="uiMcpNxuiBox" style="display:none;">
+              <div style="background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.3); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px;">
+                <div style="font-size:13px; font-weight:600; color:#f87171; margin-bottom:4px;">⚠ 프롬프트 입력 전 NXUI MCP도 연결해 주세요</div>
+                <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
+                  Figma MCP와 NXUI MCP가 <strong style="color:var(--text)">모두</strong> 연결되어 있어야 정상 작동합니다.
+                </div>
               </div>
-              <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0 0 8px;overflow-x:auto;">@nxui:registry=https://nexus.nexon.com/repository/nxui-npm-release/</pre>
-              <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">이후 패키지 매니저에 맞게 설치합니다.</div>
-              <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">// npm
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; display:flex; flex-direction:column; gap:16px;">
+                <div>
+                  <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">① NXUI MCP 실행</div>
+                  <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">생성된 프롬프트에 연결 지시가 자동 포함됩니다. Claude가 아래 명령어로 MCP를 실행합니다.</div>
+                  <pre style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;">npx -y @nxui/mcp</pre>
+                </div>
+                <div>
+                  <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">② NXUI 패키지 설치 (프로젝트에 미설치 시)</div>
+                  <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">프로젝트 루트에 <code style="background:var(--surface);padding:1px 6px;border-radius:4px;font-size:12px;">.npmrc</code> 파일을 만들고 아래 내용을 추가하세요.</div>
+                  <pre style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0 0 8px;overflow-x:auto;">@nxui:registry=https://nexus.nexon.com/repository/nxui-npm-release/</pre>
+                  <pre style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">// npm
 npm install @nxui/core
 
 // yarn
@@ -926,15 +952,11 @@ yarn add @nxui/core
 
 // pnpm
 pnpm install @nxui/core</pre>
-            </div>
-
-            <!-- 스타일 설정 -->
-            <div>
-              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">③ 스타일 설정</div>
-              <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">
-                프로젝트의 root CSS 파일(<code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;">global.css</code> 또는 <code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;">App.css</code>)에 추가하세요.
-              </div>
-              <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">@layer reset, core, tailwind;
+                </div>
+                <div>
+                  <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">③ 스타일 설정</div>
+                  <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">프로젝트의 root CSS 파일에 추가하세요.</div>
+                  <pre style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">@layer reset, core, tailwind;
 
 @layer reset {
   @import '@nxui/core/reset.css';
@@ -948,49 +970,20 @@ pnpm install @nxui/core</pre>
   @import 'tailwindcss/theme.css';
   @import 'tailwindcss/utilities.css';
 }</pre>
-            </div>
-
-            <!-- Figma MCP 설치 -->
-            <div>
-              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">④ Figma MCP 설치</div>
-              <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">
-                NXUI MCP와 함께 Figma MCP도 연결되어 있어야 합니다.
-              </div>
-              <div style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-size:13px; color:var(--text-muted); line-height:1.7;">
-                Claude에서 <code style="background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:12px;">/mcp</code> 명령어를 입력하고
-                <strong style="color:var(--text)">Figma</strong>를 검색해 설치하세요.
+                </div>
+                <div style="border-top:1px solid var(--border); padding-top:14px;">
+                  <div style="font-size:12px; color:var(--text-dim); margin-bottom:10px; line-height:1.5;">위 가이드를 Claude에 전달해 설치를 자동으로 진행시킬 수 있어요.</div>
+                  <button class="btn-action" id="btnCopyNxuiInstall" onclick="copyNxuiInstallPrompt(this)" style="width:100%; justify-content:center; padding:9px 0; font-size:13px;">
+                    📋 NXUI MCP 설치 지시 프롬프트 복사
+                  </button>
+                </div>
               </div>
             </div>
 
-            <!-- 설치 프롬프트 복사 버튼 -->
-            <div style="border-top:1px solid var(--border); padding-top:14px;">
-              <div style="font-size:12px; color:var(--text-dim); margin-bottom:10px; line-height:1.5;">
-                위 가이드를 Claude에 전달해 설치를 자동으로 진행시킬 수 있어요.
-              </div>
-              <button class="btn-action" id="btnCopyNxuiInstall" onclick="copyNxuiInstallPrompt(this)" style="width:100%; justify-content:center; padding:9px 0; font-size:13px;">
-                📋 NXUI MCP 설치 지시 프롬프트 복사
-              </button>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Figma MCP 안내 (Figma 탭 선택 시만 표시) -->
-        <div id="figmaInfoBox">
-          <!-- 상단 공지 -->
-          <div style="background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.3); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px;">
-            <div style="font-size:13px; font-weight:600; color:#f87171; margin-bottom:4px;">⚠ 프롬프트 입력 전 MCP를 먼저 연결해 주세요</div>
-            <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
-              Claude에 <strong style="color:var(--text)">Figma MCP</strong>가 연결되어 있어야 정상 작동합니다.<br/>
-              아래 방법으로 설치 후 프롬프트를 붙여넣으세요.
-            </div>
-          </div>
-          <!-- 설치 가이드 -->
-          <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px;">
-            <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px;">🖼 Figma MCP 설치</div>
-            <div style="font-size:13px; color:var(--text-dim); line-height:1.8;">
-              Claude에서 <code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;color:var(--text-muted);">/mcp</code> 명령어를 입력하고
-              <strong style="color:var(--text-muted)">Figma</strong>를 검색해 설치하세요.
+            <!-- 기타 UI MCP -->
+            <div id="uiMcpCustomBox" style="display:none;">
+              <input type="text" id="uiMcpCustomName" placeholder="사용할 UI MCP 이름 (예: Ant Design MCP, MUI MCP)" />
+              <div style="font-size:12px; color:var(--text-dim); margin-top:6px; line-height:1.5;">입력한 UI MCP 이름으로 Claude가 설치 방법을 검색해 연결한 뒤 컴포넌트를 활용합니다.</div>
             </div>
           </div>
         </div>
@@ -1372,27 +1365,34 @@ npx -y @nxui/mcp
     function onDrawToolChange() {
       const val = document.querySelector('input[name="drawTool"]:checked').value;
       document.getElementById('figmaInfoBox').style.display  = val === 'figma'  ? 'block' : 'none';
-      document.getElementById('nxuiInfoBox').style.display   = val === 'nxui'   ? 'block' : 'none';
       document.getElementById('htmlInfoBox').style.display   = val === 'html'   ? 'block' : 'none';
       document.getElementById('customToolBox').style.display = val === 'custom' ? 'block' : 'none';
       if (val === 'custom') document.getElementById('customToolName').focus();
+
+      // Figma가 아닌 경우 UI MCP 선택 초기화
+      if (val !== 'figma') {
+        const noneRadio = document.querySelector('input[name="uiMcp"][value="none"]');
+        if (noneRadio) { noneRadio.checked = true; onUiMcpChange(); }
+      }
 
       // Section 5: HTML 선택 시 피그마 위치 지정 disabled
       const section5 = document.getElementById('section5');
       const figmaToggle = document.getElementById('figmaToggle');
       if (val === 'html') {
         section5.classList.add('section-disabled');
-        if (figmaToggle.checked) {
-          figmaToggle.checked = false;
-          toggleFigma();
-        }
+        if (figmaToggle.checked) { figmaToggle.checked = false; toggleFigma(); }
       } else {
         section5.classList.remove('section-disabled');
-        if (!figmaToggle.checked) {
-          figmaToggle.checked = true;
-          toggleFigma();
-        }
+        if (!figmaToggle.checked) { figmaToggle.checked = true; toggleFigma(); }
       }
+    }
+
+    // ── UI MCP 선택 ──
+    function onUiMcpChange() {
+      const val = document.querySelector('input[name="uiMcp"]:checked')?.value || 'none';
+      document.getElementById('uiMcpNxuiBox').style.display   = val === 'nxui'   ? 'block' : 'none';
+      document.getElementById('uiMcpCustomBox').style.display = val === 'custom' ? 'block' : 'none';
+      if (val === 'custom') document.getElementById('uiMcpCustomName').focus();
     }
 
     // ── HTML 어노테이션 방식 설명 토글 ──
@@ -1474,7 +1474,10 @@ npx -y @nxui/mcp
       // Draw tool
       const drawToolEl = document.querySelector('input[name="drawTool"]:checked');
       const drawTool = drawToolEl ? drawToolEl.value : 'figma';
-      const isNxui   = drawTool === 'nxui';
+      const uiMcpVal = document.querySelector('input[name="uiMcp"]:checked')?.value || 'none';
+      const isNxui   = drawTool === 'figma' && uiMcpVal === 'nxui';
+      const uiMcpCustomName = document.getElementById('uiMcpCustomName')?.value.trim() || '';
+      const isUiMcpCustom = drawTool === 'figma' && uiMcpVal === 'custom' && uiMcpCustomName;
       const isHtml   = drawTool === 'html';
       const htmlAnnoStyle = document.querySelector('input[name="htmlAnnoStyle"]:checked')?.value || 'panel';
       const isCustom = drawTool === 'custom';
@@ -1586,7 +1589,7 @@ npx -y @nxui/mcp
       }
 
 
-      const toolLabel = isNxui ? 'NXUI MCP + Figma MCP 사용' : isHtml ? 'HTML 파일 생성' : isCustom ? `${customToolName} 사용` : 'Figma MCP 사용';
+      const toolLabel = isNxui ? 'NXUI MCP + Figma MCP 사용' : isUiMcpCustom ? `${uiMcpCustomName} + Figma MCP 사용` : isHtml ? 'HTML 파일 생성' : isCustom ? `${customToolName} 사용` : 'Figma MCP 사용';
       const sectionTitle = isHtml ? '🌐 HTML 기획서 작성 지시' : '🎨 피그마 기획서 작성 지시';
       prompt += `## ${sectionTitle} (${toolLabel})\n\n`;
 
@@ -1626,6 +1629,8 @@ npx -y @nxui/mcp
           prompt += `   - 상단: 네비게이션 / 헤더 영역\n`;
           if (isNxui) {
             prompt += `   - 본문: NXUI MCP의 컴포넌트(버튼, 인풋, 카드, 리스트 등)를 불러와 아래 기능을 하나의 화면에 통합 구현\n`;
+          } else if (isUiMcpCustom) {
+            prompt += `   - 본문: ${uiMcpCustomName}의 컴포넌트를 활용해 아래 기능을 하나의 화면에 통합 구현\n`;
           } else if (isCustom) {
             prompt += `   - 본문: ${customToolName}의 컴포넌트/기능을 활용해 아래 기능을 하나의 화면에 통합 구현\n`;
           } else {
@@ -1798,6 +1803,13 @@ npx -y @nxui/mcp
         prompt += `>    - 테스트 통과 시에만 나머지 전체 메뉴 기획서 생성을 진행한다\n`;
         prompt += `>    - 실패 시 오류 원인을 분석하고 해결 방법을 사용자에게 보고한 뒤 대기한다\n`;
         prompt += `> ${step++}. 테스트 통과 후 메뉴 순서대로 기획서 프레임 전체를 생성한다 (Figma MCP + NXUI MCP 사용)\n`;
+      } else if (isUiMcpCustom) {
+        prompt += `> ${step++}. ${uiMcpCustomName} 설치·연결 방법을 검색하고 연결을 완료한다\n`;
+        prompt += `> ${step++}. ${uiMcpCustomName}의 사용 가능한 컴포넌트 목록을 파악한다\n`;
+        prompt += `> ${step++}. **[생성 테스트]** 첫 번째 메뉴(${menus[0]?.name || '첫 메뉴'})의 프레임 1개만 먼저 생성하여 Figma MCP + ${uiMcpCustomName} 동작을 검증한다\n`;
+        prompt += `>    - 테스트 통과 시에만 나머지 전체 메뉴 기획서 생성을 진행한다\n`;
+        prompt += `>    - 실패 시 오류 원인을 분석하고 해결 방법을 사용자에게 보고한 뒤 대기한다\n`;
+        prompt += `> ${step++}. 테스트 통과 후 메뉴 순서대로 기획서 프레임 전체를 생성한다 (Figma MCP + ${uiMcpCustomName} 사용)\n`;
       } else if (isCustom) {
         prompt += `> ${step++}. ${customToolName} 설치·연결 방법을 검색하고 연결을 완료한다\n`;
         prompt += `> ${step++}. ${customToolName}의 사용 가능한 기능·컴포넌트를 파악한다\n`;
@@ -1904,6 +1916,10 @@ npx -y @nxui/mcp
       document.getElementById('htmlInfoBox').style.display   = 'none';
       document.getElementById('customToolBox').style.display = 'none';
       document.getElementById('customToolName').value = '';
+      // UI MCP 초기화
+      const noneUiMcp = document.querySelector('input[name="uiMcp"][value="none"]');
+      if (noneUiMcp) { noneUiMcp.checked = true; onUiMcpChange(); }
+      if (document.getElementById('uiMcpCustomName')) document.getElementById('uiMcpCustomName').value = '';
 
       // 피그마 위치 토글 OFF + 필드 초기화
       const figmaToggle = document.getElementById('figmaToggle');
