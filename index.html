@@ -562,6 +562,140 @@
       box-shadow: 0 0 0 4px rgba(248,113,113,0.2);
     }
 
+    /* ── Step Wizard ── */
+    .step-tabs-wrap {
+      margin-bottom: 8px;
+    }
+    .step-tabs {
+      display: flex;
+      gap: 4px;
+    }
+    .step-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 6px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      min-width: 0;
+    }
+    .step-tab:hover { border-color: rgba(124,106,247,0.4); background: var(--surface2); }
+    .step-tab.active { border-color: var(--accent); background: var(--accent-soft); }
+    .step-tab-disabled { opacity: 0.35 !important; pointer-events: none !important; }
+    .step-tab-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      font-size: 11px; font-weight: 700;
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-tab.active .step-tab-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .step-tab-label {
+      font-size: 11px; font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .step-tab.active .step-tab-label { color: var(--text); }
+    .step-tab-opt {
+      font-size: 9px; font-weight: 700;
+      color: var(--text-dim);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+      letter-spacing: 0.2px;
+    }
+    .step-tab.active .step-tab-opt {
+      color: #a89ef9;
+      background: rgba(124,106,247,0.15);
+      border-color: rgba(124,106,247,0.3);
+    }
+
+    .step-panel { display: none; }
+    .step-panel.active { display: block; animation: fadeIn 0.2s ease; }
+
+    .step-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 13px; font-weight: 600;
+      font-family: inherit;
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-step:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .btn-step.next {
+      color: var(--text);
+      border-color: rgba(124,106,247,0.5);
+      background: var(--accent-soft);
+    }
+    .btn-step.next:hover { background: rgba(124,106,247,0.22); }
+
+    /* Wizard card wrapper */
+    .wizard-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 0;
+    }
+    .wizard-card .step-tabs-wrap {
+      margin: -20px -20px 16px;
+      padding: 0;
+      border-radius: var(--radius) var(--radius) 0 0;
+      overflow: hidden;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .wizard-card .step-tabs {
+      padding: 12px 12px 12px;
+    }
+
+    /* Generate button below wizard card */
+    .generate-below {
+      text-align: center;
+      padding: 20px 0 8px;
+    }
+    .btn-generate-fab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 28px;
+      color: #fff;
+      font-size: 13px; font-weight: 700;
+      font-family: inherit;
+      padding: 13px 22px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(124,106,247,0.45);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-generate-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,106,247,0.55); }
+    .btn-generate-fab:active { transform: translateY(0); }
+
     /* ── Generate button ── */
     .generate-area {
       text-align: center;
@@ -701,6 +835,252 @@
       margin-top: 1px;
     }
 
+    /* ── Result Tabs ── */
+    .result-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+    .result-tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-tab:hover { color: var(--text); }
+    .result-tab.active { color: #a89ef9; border-bottom-color: var(--accent); }
+
+    /* ── Setup Tab ── */
+    .setup-section {
+      margin-bottom: 28px;
+    }
+    .setup-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .md-file-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 8px;
+      transition: border-color 0.2s;
+    }
+    .md-file-card:hover { border-color: rgba(124,106,247,0.4); }
+    .md-file-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .md-file-info { flex: 1; min-width: 0; }
+    .md-file-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .md-file-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .md-file-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      align-items: flex-start;
+    }
+    .btn-md {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-md:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .btn-md.external { color: #a89ef9; border-color: rgba(124,106,247,0.3); background: var(--accent-soft); }
+    .btn-md.external:hover { background: rgba(124,106,247,0.2); }
+
+    .placement-guide {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .placement-guide code {
+      background: rgba(124,106,247,0.12);
+      border: 1px solid rgba(124,106,247,0.2);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Menlo','Monaco','Courier New',monospace;
+      font-size: 11px;
+      color: #c4b9fa;
+    }
+
+    .agent-card {
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .agent-badge {
+      background: rgba(124,106,247,0.15);
+      border: 1px solid rgba(124,106,247,0.3);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #a89ef9;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .agent-info { flex: 1; }
+    .agent-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .agent-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+    .agent-pending {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--warning);
+      background: rgba(250,204,21,0.08);
+      border: 1px solid rgba(250,204,21,0.2);
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-top: 6px;
+    }
+
+    .tip-list { display: flex; flex-direction: column; gap: 8px; }
+    .tip-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .tip-num {
+      width: 20px; height: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .tip-body { flex: 1; }
+    .tip-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .tip-desc { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+    .tip-desc code {
+      background: rgba(124,106,247,0.1);
+      border-radius: 3px;
+      padding: 0 5px;
+      font-family: 'Menlo','Monaco','Courier New',monospace;
+      font-size: 11px;
+      color: #c4b9fa;
+    }
+
+    /* ── Setup Steps ── */
+    .setup-step {
+      position: relative;
+      padding-left: 52px;
+      padding-bottom: 32px;
+    }
+    .setup-step:last-child { padding-bottom: 0; }
+    .setup-step::before {
+      content: '';
+      position: absolute;
+      left: 18px;
+      top: 36px;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .setup-step:last-child::before { display: none; }
+    .setup-step-num {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 36px; height: 36px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 800;
+      color: #a89ef9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .setup-step-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      margin-bottom: 12px;
+    }
+    .setup-step-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .setup-step-badge {
+      font-size: 11px;
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.25);
+      color: var(--success);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-weight: 600;
+    }
+    .setup-step-content {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
@@ -719,6 +1099,49 @@
       <button class="btn-reset" onclick="resetAll()">↺ 초기화</button>
     </div>
 
+    <!-- Wizard Card -->
+    <div class="wizard-card">
+
+    <!-- Step Tabs -->
+    <div class="step-tabs-wrap">
+      <div class="step-tabs" id="stepTabs">
+        <button class="step-tab active" id="steptab-1" onclick="goToStep(1)">
+          <span class="step-tab-num">1</span>
+          <span class="step-tab-label">기본 정보</span>
+        </button>
+        <button class="step-tab" id="steptab-2" onclick="goToStep(2)">
+          <span class="step-tab-num">2</span>
+          <span class="step-tab-label">메뉴 구조</span>
+        </button>
+        <button class="step-tab" id="steptab-3" onclick="goToStep(3)">
+          <span class="step-tab-num">3</span>
+          <span class="step-tab-label">노션 문서</span>
+          <span class="step-tab-opt">선택</span>
+        </button>
+        <button class="step-tab" id="steptab-4" onclick="goToStep(4)">
+          <span class="step-tab-num">4</span>
+          <span class="step-tab-label">정책 동기화</span>
+          <span class="step-tab-opt">선택</span>
+        </button>
+        <button class="step-tab" id="steptab-5" onclick="goToStep(5)">
+          <span class="step-tab-num">5</span>
+          <span class="step-tab-label">출력 설정</span>
+        </button>
+        <button class="step-tab" id="steptab-6" onclick="goToStep(6)">
+          <span class="step-tab-num">6</span>
+          <span class="step-tab-label">위치 지정</span>
+          <span class="step-tab-opt">선택</span>
+        </button>
+        <button class="step-tab" id="steptab-7" onclick="goToStep(7)">
+          <span class="step-tab-num">7</span>
+          <span class="step-tab-label">추가 요청</span>
+          <span class="step-tab-opt">선택</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-panel active" id="step-panel-1">
     <!-- Section 1: 프로젝트 기본 정보 -->
     <div class="section">
       <div class="section-header">
@@ -745,6 +1168,14 @@
       </div>
     </div>
 
+      <div class="step-nav">
+        <div></div>
+        <button class="btn-step next" onclick="goToStep(2)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-1 -->
+
+    <!-- Step 2 -->
+    <div class="step-panel" id="step-panel-2">
     <!-- Section 2: 메뉴 구조 & 기능 -->
     <div class="section">
       <div class="section-header">
@@ -758,6 +1189,14 @@
       </button>
     </div>
 
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(1)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(3)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-2 -->
+
+    <!-- Step 3 -->
+    <div class="step-panel" id="step-panel-3">
     <!-- Section 3: 노션 정책 문서 -->
     <div class="section">
       <div class="section-header">
@@ -784,10 +1223,95 @@
       </div>
     </div>
 
-    <!-- Section 4: 기획서 출력 설정 -->
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(2)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(4)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-3 -->
+
+    <!-- Step 4 -->
+    <div class="step-panel" id="step-panel-4">
+    <!-- Section 4: 메뉴별 정책 동기화 -->
     <div class="section">
       <div class="section-header">
         <div class="section-number">4</div>
+        <div class="section-title">메뉴별 정책 동기화</div>
+        <span style="margin-left:auto; font-size:11px; background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.25); color:var(--success); border-radius:4px; padding:2px 8px; font-weight:600;">권장</span>
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px; line-height:1.6;">
+        각 메뉴 기획서 생성 후 Claude가 해당 화면의 정책을 아래 노션 페이지에 자동으로 기록합니다.
+        다음 메뉴 작업 시 이 페이지를 먼저 읽어 용어·조건·어노테이션 번호의 일관성을 유지합니다.
+      </div>
+      <div class="form-group">
+        <label>정책 동기화 노션 페이지</label>
+        <div class="notion-url-wrap">
+          <span class="notion-icon">🗂</span>
+          <input type="url" id="notionSyncUrl" class="notion-url-input"
+            placeholder="정책 기록 전용 노션 페이지 URL (쓰기 권한 필요)"
+            oninput="checkDirty()" />
+        </div>
+        <div style="font-size:11px; color:var(--text-dim); margin-top:6px; line-height:1.5;">
+          ※ 3번 읽기용 정책 문서와 별도로, 기획서 작성 결과를 축적하는 전용 페이지입니다.<br/>
+          ※ Notion MCP에 해당 페이지의 <strong style="color:var(--text-muted)">편집(Edit) 권한</strong>이 있어야 합니다.
+        </div>
+      </div>
+
+      <!-- Notion MCP 연결 가이드 -->
+      <div class="form-group" style="margin-top:4px;">
+        <label>Notion MCP 연결 가이드</label>
+        <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden;">
+          <button onclick="toggleMcpGuide('notion', this)" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:13px; font-weight:600;">
+            <span style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:14px;">📘</span> 연결 방법 보기
+            </span>
+            <span style="font-size:11px; transition:transform 0.2s;">▼</span>
+          </button>
+          <div id="mcpGuideNotion" style="display:none; padding:0 16px 16px; flex-direction:column; gap:14px;">
+            <div>
+              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">① Claude Code — /mcp 로 연결</div>
+              <div style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">
+                Claude Code 터미널에서 <code style="background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.2);border-radius:4px;padding:1px 6px;font-family:'Menlo','Monaco','Courier New',monospace;font-size:11px;color:#c4b9fa;">/mcp</code> 를 입력하면 MCP 서버 목록이 표시됩니다. 목록에서 Notion을 선택해 연결하세요.
+              </div>
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-family:'Menlo','Monaco','Courier New',monospace; font-size:12px; color:#c4b9fa;">/mcp</div>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">② Claude.ai (Cowork) — 통합 설정에서 연결</div>
+              <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+                Claude.ai → 설정 → 통합(Integrations) → Notion 추가 → 허용 범위 설정.<br/>
+                정책 동기화 기능을 사용한다면 <strong style="color:var(--text)">편집(Edit) 권한</strong>을 반드시 허용해야 합니다.
+              </div>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">③ 동기화 페이지 권한 확인</div>
+              <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+                동기화 대상 노션 페이지에 Notion MCP 봇을 <strong style="color:var(--text)">편집자(Editor)</strong>로 추가해야 합니다.<br/>
+                페이지 공유 설정 → "연결 추가" → Notion MCP 봇 검색 후 편집자 권한 부여.
+              </div>
+            </div>
+            <div style="background:rgba(250,204,21,0.06); border:1px solid rgba(250,204,21,0.2); border-radius:6px; padding:10px 12px;">
+              <div style="font-size:11px; font-weight:700; color:var(--warning); margin-bottom:4px;">⚠ 읽기 전용 문서 vs 동기화 페이지</div>
+              <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+                3번 섹션의 "노션 정책 문서"는 읽기 전용이어도 됩니다.<br/>
+                이 섹션의 "정책 동기화" 페이지만 편집 권한이 필요합니다.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(3)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(5)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-4 -->
+
+    <!-- Step 5 -->
+    <div class="step-panel" id="step-panel-5">
+    <!-- Section 5: 기획서 출력 설정 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">5</div>
         <div class="section-title">기획서 출력 설정</div>
       </div>
       <div class="form-group">
@@ -996,10 +1520,28 @@ pnpm install @nxui/core</pre>
       </div>
     </div>
 
-    <!-- Section 5: 피그마 위치 지정 -->
-    <div class="section" id="section5">
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(4)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(6)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-5 -->
+
+    <!-- Step 6 -->
+    <div class="step-panel" id="step-panel-6">
+
+    <!-- Figma-only 안내 (Figma MCP 미선택 시 표시) -->
+    <div id="figmaOnlyNotice" style="display:none; align-items:center; gap:10px; background:rgba(250,204,21,0.07); border:1px solid rgba(250,204,21,0.25); border-radius:var(--radius-sm); padding:11px 14px; margin-bottom:12px;">
+      <span style="font-size:16px; flex-shrink:0;">🖼</span>
+      <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+        <strong style="color:var(--warning);">Figma MCP 전용 설정입니다.</strong><br/>
+        5번 출력 설정에서 <strong style="color:var(--text)">Figma MCP</strong>를 선택해야 이 섹션의 필드가 활성화됩니다.
+      </div>
+    </div>
+
+    <!-- Section 6: 피그마 위치 지정 -->
+    <div class="section" id="section6">
       <div class="section-header">
-        <div class="section-number">5</div>
+        <div class="section-number">6</div>
         <div class="section-title">피그마 위치 지정</div>
         <div class="section-desc">선택사항</div>
       </div>
@@ -1055,51 +1597,224 @@ pnpm install @nxui/core</pre>
       </div>
     </div>
 
-    <!-- Section 6: 추가 요청 -->
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(5)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(7)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-6 -->
+
+    <!-- Step 7 -->
+    <div class="step-panel" id="step-panel-7">
+    <!-- Section 7: 추가 요청 -->
     <div class="section">
       <div class="section-header">
-        <div class="section-number">6</div>
+        <div class="section-number">7</div>
         <div class="section-title">추가 요청사항</div>
         <div class="section-desc">선택사항</div>
       </div>
       <textarea id="extraRequests" placeholder="예) 다크모드 기준으로 작성해줘, 모바일 375px 기준 프레임으로, 컴포넌트는 Auto Layout 사용" style="min-height:80px;margin-bottom:0"></textarea>
     </div>
 
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(6)">← 이전</button>
+      </div>
+    </div><!-- /step-panel-7 -->
+
+    </div><!-- /wizard-card -->
+
     <!-- Generate Button -->
-    <div class="generate-area">
-      <button class="btn-generate" onclick="generatePrompt()">
+    <div class="generate-below">
+      <button class="btn-generate-fab" onclick="generatePrompt()">
         <span>✦</span> 프롬프트 생성하기
       </button>
     </div>
 
     <!-- Result -->
     <div class="result-card" id="resultCard">
-      <div class="result-toolbar">
-        <div class="result-title">생성된 프롬프트</div>
-        <div class="result-actions">
-          <button class="btn-action" onclick="copyPrompt(this)">📋 복사</button>
-          <button class="btn-action" onclick="downloadPrompt()">⬇ 저장</button>
-        </div>
+
+      <!-- 탭 버튼 -->
+      <div class="result-tabs">
+        <button class="result-tab" id="tabBtnPrompt" onclick="switchResultTab('prompt', this)">✦ 프롬프트</button>
+        <button class="result-tab" id="tabBtnSetup" onclick="switchResultTab('setup', this)">📁 프로젝트 초기 셋팅</button>
       </div>
-      <div class="result-body" id="resultBody"></div>
-      <div class="how-to">
-        <div class="how-to-title">🚀 이렇게 사용하세요</div>
-        <div class="how-to-steps">
-          <div class="how-to-step">
-            <div class="step-num">1</div>
-            <span>위 프롬프트를 복사한 뒤 <strong style="color:var(--text)">Claude Cowork 또는 Claude.ai</strong> 채팅창에 붙여넣으세요.</span>
-          </div>
-          <div class="how-to-step">
-            <div class="step-num">2</div>
-            <span id="howToStep2">Claude가 <strong style="color:var(--text)">Notion MCP</strong>로 정책 문서를 읽고, <strong style="color:var(--text)">Figma MCP</strong>로 기획서 프레임을 자동 생성합니다.</span>
-          </div>
-          <div class="how-to-step">
-            <div class="step-num">3</div>
-            <span>피그마에서 생성된 기획서를 확인하고 추가 수정을 요청하거나 직접 편집하세요.</span>
+
+      <!-- ── 탭: 프롬프트 ── -->
+      <div id="tabPrompt">
+        <div class="result-toolbar">
+          <div class="result-title">생성된 프롬프트</div>
+          <div class="result-actions">
+            <button class="btn-action" onclick="copyPrompt(this)">📋 복사</button>
+            <button class="btn-action" onclick="downloadPrompt()">⬇ 저장</button>
           </div>
         </div>
+        <div class="result-body" id="resultBody"></div>
+        <div class="how-to">
+          <div class="how-to-title">🚀 이렇게 사용하세요</div>
+          <div class="how-to-steps">
+            <div class="how-to-step">
+              <div class="step-num">1</div>
+              <span>위 프롬프트를 복사한 뒤 <strong style="color:var(--text)">Claude Cowork 또는 Claude.ai</strong> 채팅창에 붙여넣으세요.</span>
+            </div>
+            <div class="how-to-step">
+              <div class="step-num">2</div>
+              <span id="howToStep2">Claude가 <strong style="color:var(--text)">Notion MCP</strong>로 정책 문서를 읽고, <strong style="color:var(--text)">Figma MCP</strong>로 기획서 프레임을 자동 생성합니다.</span>
+            </div>
+            <div class="how-to-step">
+              <div class="step-num">3</div>
+              <span>생성된 기획서를 확인하고 추가 수정을 요청하거나 직접 편집하세요.</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <!-- ── 탭: 프로젝트 초기 셋팅 ── -->
+      <div id="tabSetup" style="display:none">
+
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:24px; line-height:1.6;">
+          프롬프트 실행 전 아래 순서로 Claude 프로젝트를 셋팅하면 일관된 품질의 기획서를 반복 생성할 수 있습니다.
+        </p>
+
+        <!-- Step 1: MD 파일 -->
+        <div class="setup-step">
+          <div class="setup-step-num">1</div>
+          <div class="setup-step-head">
+            <div class="setup-step-title">📄 MD 파일 설정</div>
+          </div>
+          <div class="setup-step-content">
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.6;">
+              아래 3개 파일을 Claude 프로젝트 루트에 배치하면 Claude가 일관된 방식으로 기획서를 작성합니다.
+            </p>
+
+            <div class="md-file-card">
+              <div class="md-file-icon">🧠</div>
+              <div class="md-file-info">
+                <div class="md-file-name">CLAUDE.md</div>
+                <div class="md-file-desc">Claude의 작업 행동 원칙 정의. 불필요한 변경 방지, 단순성 우선 원칙 등 실수 패턴을 사전 차단합니다. andrej-karpathy-skills의 CLAUDE.md를 사용하세요.</div>
+                <div style="margin-top:8px; background:var(--surface2); border-radius:5px; padding:6px 10px; font-size:11px; font-family:'Menlo','Monaco','Courier New',monospace; color:var(--text-muted); word-break:break-all;">
+                  https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md
+                </div>
+              </div>
+              <div class="md-file-actions">
+                <button class="btn-md external" onclick="window.open('https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md','_blank')">↗ GitHub</button>
+                <button class="btn-md external" onclick="window.open('https://raw.githubusercontent.com/multica-ai/andrej-karpathy-skills/main/CLAUDE.md','_blank')">⬇ Raw</button>
+              </div>
+            </div>
+
+            <div class="md-file-card">
+              <div class="md-file-icon">✍️</div>
+              <div class="md-file-info">
+                <div class="md-file-name">writing_rule.md</div>
+                <div class="md-file-desc">용어·문체·화면 명칭 통일 규칙. 여러 사람이 작업해도 같은 톤과 표현으로 기획서가 작성됩니다. 팀 상황에 맞게 수정하여 사용하세요.</div>
+              </div>
+              <div class="md-file-actions">
+                <button class="btn-md" onclick="previewMd('writing_rule')">👁 미리보기</button>
+                <button class="btn-md" onclick="downloadMdFile('writing_rule')">⬇ 다운로드</button>
+              </div>
+            </div>
+
+            <div class="md-file-card">
+              <div class="md-file-icon">📐</div>
+              <div class="md-file-info">
+                <div class="md-file-name">instruction.md</div>
+                <div class="md-file-desc">기획서 프레임 구조, 섹션별 작성 항목, 에러 케이스 문서화 기준 정의. Claude가 이 파일을 참조해 일관된 기획서 구조를 유지합니다.</div>
+              </div>
+              <div class="md-file-actions">
+                <button class="btn-md" onclick="previewMd('instruction')">👁 미리보기</button>
+                <button class="btn-md" onclick="downloadMdFile('instruction')">⬇ 다운로드</button>
+              </div>
+            </div>
+
+            <!-- 배치 가이드 -->
+            <div class="placement-guide" style="margin-top:10px;">
+              <strong style="color:var(--text); display:block; margin-bottom:6px;">📂 파일 배치 위치</strong>
+              Claude Code 프로젝트 루트에 배치하거나, Claude.ai Project의 "Project instructions"에 내용을 붙여넣으세요.<br>
+              <code>프로젝트_루트/CLAUDE.md</code> &nbsp;·&nbsp;
+              <code>프로젝트_루트/writing_rule.md</code> &nbsp;·&nbsp;
+              <code>프로젝트_루트/instruction.md</code>
+            </div>
+
+            <!-- MD 미리보기 영역 -->
+            <div id="mdPreviewArea" style="display:none; margin-top:14px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                <div style="font-size:12px; font-weight:700; color:#a89ef9;" id="mdPreviewTitle"></div>
+                <button class="btn-action" style="font-size:11px;" onclick="document.getElementById('mdPreviewArea').style.display='none'">✕ 닫기</button>
+              </div>
+              <div class="result-body" id="mdPreviewBody" style="max-height:280px; font-size:12px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: 서브 에이전트 -->
+        <div class="setup-step">
+          <div class="setup-step-num">2</div>
+          <div class="setup-step-head">
+            <div class="setup-step-title">🤖 서브 에이전트 설치</div>
+          </div>
+          <div class="setup-step-content">
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.6;">
+              에이전트 파일을 <code style="background:rgba(124,106,247,0.1);border-radius:3px;padding:0 5px;font-size:11px;color:#c4b9fa;">.claude/agents/</code> 폴더에 배치하면 Claude Code에서 서브 에이전트로 호출할 수 있습니다.
+            </p>
+            <div class="agent-card">
+              <div class="agent-badge">AGENT</div>
+              <div class="agent-info">
+                <div class="agent-name">리뷰어 에이전트 (reviewer.md)</div>
+                <div class="agent-desc">생성된 기획서의 완성도를 검토합니다. 누락된 에러 케이스, 불명확한 동작 정의, 정책 문서와의 불일치를 자동으로 찾아냅니다. 작업 완료 후 <code style="background:rgba(124,106,247,0.1);border-radius:3px;padding:0 4px;font-size:11px;color:#c4b9fa;">/reviewer</code>로 호출하세요.</div>
+                <div class="agent-pending">⏳ 파일 준비 중 — 곧 제공될 예정입니다</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: 작업 팁 -->
+        <div class="setup-step">
+          <div class="setup-step-num">3</div>
+          <div class="setup-step-head">
+            <div class="setup-step-title">💡 Claude Code 기획서 작업 팁</div>
+          </div>
+          <div class="setup-step-content">
+            <div class="tip-list">
+              <div class="tip-item">
+                <div class="tip-num">1</div>
+                <div class="tip-body">
+                  <div class="tip-title">Project 단위로 컨텍스트 유지하기</div>
+                  <div class="tip-desc">Claude.ai의 <strong style="color:var(--text)">Project</strong> 기능을 활용하면 CLAUDE.md, writing_rule.md, instruction.md를 Project Instructions에 등록해 매번 붙여넣지 않아도 됩니다. 서비스별로 Project를 나눠 관리하세요.</div>
+                </div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-num">2</div>
+                <div class="tip-body">
+                  <div class="tip-title">Slash Command로 반복 작업 단축하기</div>
+                  <div class="tip-desc"><code>.claude/commands/</code> 폴더에 <code>review.md</code>, <code>add-state.md</code> 등을 만들어두면 <code>/review</code>, <code>/add-state</code>로 즉시 호출할 수 있습니다. 자주 쓰는 기획서 작업 패턴을 커맨드로 등록해두세요.</div>
+                </div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-num">3</div>
+                <div class="tip-body">
+                  <div class="tip-title">메뉴 단위로 나눠 작업 → 리뷰 루프 만들기</div>
+                  <div class="tip-desc">메뉴 단위로 나눠 요청하고 각 메뉴 완료 후 리뷰어 에이전트를 돌리세요. "화면 생성 → 노션 동기화 → 리뷰 → 누락 보완"을 한 사이클로 묶으면 뒷 메뉴로 갈수록 일관성이 유지됩니다.</div>
+                </div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-num">4</div>
+                <div class="tip-body">
+                  <div class="tip-title">스크린샷·레퍼런스 이미지 적극 활용하기</div>
+                  <div class="tip-desc">Claude Code는 이미지를 직접 이해합니다. 참고할 기존 화면 캡처나 경쟁사 레퍼런스를 함께 첨부하면 더 정확한 레이아웃으로 기획서를 생성합니다. 특히 복잡한 목록형 화면에서 효과적입니다.</div>
+                </div>
+              </div>
+              <div class="tip-item">
+                <div class="tip-num">5</div>
+                <div class="tip-body">
+                  <div class="tip-title">수정 요청은 구체적인 위치와 함께 하기</div>
+                  <div class="tip-desc">"2번 화면의 에러 상태 어노테이션 3번 — 네트워크 오류 시 재시도 버튼 추가해줘" 처럼 화면명·번호·수정 내용을 함께 명시하면 Claude가 정확히 해당 부분만 수정합니다. 모호한 수정 요청은 의도치 않은 변경을 유발합니다.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tabSetup -->
+
+    </div><!-- /result-card -->
 
   </div>
 
@@ -1385,16 +2100,46 @@ npx -y @nxui/mcp
         uiMcpSection.style.display = 'block';
       }
 
-      // Section 5: HTML 선택 시 피그마 위치 지정 disabled
-      const section5 = document.getElementById('section5');
+      // Section 6: Figma MCP 아닌 경우 필드만 disabled, 탭은 항상 접근 가능
+      const section5 = document.getElementById('section6');
       const figmaToggle = document.getElementById('figmaToggle');
-      if (val === 'html') {
-        section5.classList.add('section-disabled');
-        if (figmaToggle.checked) { figmaToggle.checked = false; toggleFigma(); }
-      } else {
+      const figmaOnlyNotice = document.getElementById('figmaOnlyNotice');
+      if (val === 'figma') {
         section5.classList.remove('section-disabled');
+        if (figmaOnlyNotice) figmaOnlyNotice.style.display = 'none';
         if (!figmaToggle.checked) { figmaToggle.checked = true; toggleFigma(); }
+      } else {
+        section5.classList.add('section-disabled');
+        if (figmaOnlyNotice) figmaOnlyNotice.style.display = 'flex';
+        if (figmaToggle.checked) { figmaToggle.checked = false; toggleFigma(); }
       }
+    }
+
+    // ── Step Wizard ──
+    let currentStep = 1;
+    const TOTAL_STEPS = 7;
+
+    function goToStep(n) {
+      if (n < 1 || n > TOTAL_STEPS) return;
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+      const panel = document.getElementById('step-panel-' + n);
+      const tab   = document.getElementById('steptab-' + n);
+      if (panel) panel.classList.add('active');
+      if (tab)   tab.classList.add('active');
+      currentStep = n;
+      tab?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── MCP 가이드 접기/펼치기 (공용) ──
+    function toggleMcpGuide(key, btn) {
+      const body  = document.getElementById('mcpGuide' + key.charAt(0).toUpperCase() + key.slice(1));
+      const arrow = btn.querySelector('span:last-child');
+      if (!body) return;
+      const isOpen = body.style.display === 'flex';
+      body.style.display = isOpen ? 'none' : 'flex';
+      arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
     }
 
     // ── NXUI 가이드 접기/펼치기 ──
@@ -1425,6 +2170,270 @@ npx -y @nxui/mcp
       }
     });
 
+    // ── Result tab switching ──
+    function switchResultTab(tab, btn) {
+      document.getElementById('tabPrompt').style.display = tab === 'prompt' ? 'block' : 'none';
+      document.getElementById('tabSetup').style.display  = tab === 'setup'  ? 'block' : 'none';
+      document.querySelectorAll('.result-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    // ── MD file contents ──
+    const MD_FILES = {
+      writing_rule: {
+        filename: 'writing_rule.md',
+        title: 'writing_rule.md — 기획서 작성 규칙',
+        content: `# 기획서 작성 규칙 (Writing Rules)
+
+## 1. 용어 통일
+
+### UI 요소 기준 용어
+| 기준 용어 | 사용 금지 표현 |
+|---|---|
+| 버튼 | btn, 클릭 요소 |
+| 입력창 | 입력 필드, input |
+| 팝업 | 모달, 다이얼로그, 레이어 팝업 |
+| 토스트 | 알림, 스낵바, 토스트 메시지 |
+| 탭 | 탭메뉴, 카테고리 탭 |
+| 드롭다운 | 셀렉트박스, 선택창 |
+| 토글 | 스위치, ON/OFF 버튼 |
+| 체크박스 | 체크, 선택박스 |
+| 라디오 버튼 | 단일선택, 옵션버튼 |
+| 배너 | 이미지 배너, 슬라이드 배너 |
+| 바텀시트 | 하단 팝업, 슬라이드업 패널 |
+
+### 화면 상태 기준 용어
+| 상태 | 기준 표현 |
+|---|---|
+| 초기/정상 | 기본 |
+| 데이터 없음 | Empty / 빈 화면 |
+| 통신 오류 | 에러 / 오류 화면 |
+| 처리 중 | 로딩 |
+| 입력값 오류 | 유효성 오류 |
+| 권한 없음 | 접근 제한 |
+
+### 액션 기준 동사
+- PC 환경: 클릭하다
+- 모바일 환경: 탭하다
+- 값을 넣는 행위: 입력하다
+- 항목을 고르는 행위: 선택하다
+- 화면 전환: 이동하다 / 진입하다
+- 팝업 닫기: 닫다 / 닫힌다
+
+---
+
+## 2. 문체 규칙
+
+### 기본 원칙
+- 서술형으로 작성: "~한다", "~된다", "~할 수 있다"
+- 개조식 금지: ❌ "클릭 시 이동" → ✅ "클릭 시 해당 화면으로 이동한다"
+- 수동태 지양: ❌ "처리됩니다" → ✅ "처리된다"
+- 주어 생략 최소화: 사용자, 시스템, 버튼, 화면 등 주어를 명시한다
+
+### 기능 설명 패턴
+사용자 행동과 시스템 반응을 함께 작성한다.
+- 예: "사용자가 [버튼]을 클릭하면 [결과]가 발생한다"
+- 예: "[조건] 상태일 때, [요소]는 [상태]로 표시된다"
+- 예: "[A] 또는 [B] 조건에서 [버튼]은 비활성(disabled) 상태가 된다"
+
+### 어노테이션 문체
+- 1~2문장 이내로 간결하게 작성
+- 예외 케이스는 "단, ~" 또는 "예외: ~"로 명시
+- 참조 문서는 "(→ [문서명] 참조)"로 표기
+
+---
+
+## 3. 화면 명칭 규칙
+
+### 화면 이름 패턴
+[메뉴명] / [서브메뉴명] — [상태]
+- 예: "상품 목록 — 기본"
+- 예: "상품 목록 — Empty"
+- 예: "결제 수단 선택 — 에러"
+- 예: "마이페이지 / 주문 내역 — 기본"
+
+### 팝업 명칭 패턴
+[기능명] 팝업 — [상태]
+- 예: "쿠폰 적용 팝업 — 기본"
+- 예: "탈퇴 확인 팝업"
+
+---
+
+## 4. 숫자·단위 표기
+- 수량: 아라비아 숫자 (1, 2, 3)
+- 퍼센트: % 기호 (10%)
+- 금액: 서비스 정책에 따르되 통일 (예: 1,000원)
+- 시간: 서비스 정책에 따르되 통일 (예: 14:00 또는 오후 2시)
+- 글자 수 제한: "최대 OO자" 형식으로 통일
+
+---
+
+## 5. 참조·링크 표기
+- 정책 문서 참조: "(→ [문서명] 참조)"
+- 타 화면 참조: "(→ [화면명] 참고)"
+- 연관 기능 참조: "(→ OO 기능과 동일)"
+`
+      },
+      instruction: {
+        filename: 'instruction.md',
+        title: 'instruction.md — 기획서 구조 가이드',
+        content: `# 기획서 구조 가이드 (Instruction)
+
+## 기획서 기본 구성
+
+기획서는 다음 순서의 독립 프레임으로 구성한다.
+
+1. **화면 프레임** (필수) — 각 메뉴 × 상태별 UI 레이아웃
+2. **어노테이션 프레임** (필수) — 기능 설명 모음 (화면 프레임과 분리)
+
+---
+
+## 화면 프레임 구조
+
+### 프레임 명칭 규칙
+\`\`\`
+[메뉴명] / [서브메뉴명] — [상태]
+예) 상품 목록 — 기본
+    상품 목록 — Empty
+    결제 수단 선택 — 에러
+    마이페이지 / 주문 내역 — 기본
+\`\`\`
+
+### 화면 프레임에 포함할 요소
+
+**필수 요소**
+- 화면 UI 레이아웃 전체
+- 헤더/내비게이션 영역
+- 주요 기능 영역
+- 어노테이션 번호 배지 (기능이 있는 요소마다)
+
+**상태별 추가 요소**
+| 상태 | 추가 요소 |
+|---|---|
+| 기본 | 실제 데이터가 채워진 상태의 UI |
+| Empty | 빈 상태 안내 메시지 + CTA 버튼 |
+| 에러 | 에러 메시지 영역 + 재시도 액션 |
+| 로딩 | 스켈레톤 UI 또는 스피너 |
+| 팝업 | 딤드 배경 + 팝업 레이어 |
+
+### 어노테이션 번호 배지 규칙
+- 각 기능 요소 우측 상단에 원형 배지로 표기
+- 번호는 화면 내에서 좌→우, 상→하 순서로 부여
+- 팝업이 존재하는 경우, 팝업 내 기능에도 별도 번호 부여
+- 팝업 어노테이션은 팝업이 열린 상태에서만 표시
+
+---
+
+## 어노테이션 프레임 구조
+
+### 원칙
+- 화면 프레임과 분리된 독립 최상위 프레임으로 생성
+- 화면명 기준으로 섹션 구분
+- 번호는 해당 화면의 배지 번호와 반드시 일치
+
+### 어노테이션 항목 작성 형식
+\`\`\`
+[번호] [기능명]
+동작: [사용자 행동] → [시스템 반응]
+조건: [표시 조건 또는 비활성화 조건]
+예외: [에러 케이스 또는 엣지 케이스]
+참조: [관련 정책 문서 또는 화면]
+\`\`\`
+
+---
+
+## 섹션별 작성 가이드
+
+### 헤더 / 내비게이션
+- 타이틀 텍스트 및 Back 버튼 유무 명시
+- 우측 액션 버튼이 있을 경우 기능 명시
+- 탭이나 필터가 있는 경우 각 항목 기능과 기본 선택값 명시
+
+### 리스트 / 그리드 영역
+- 아이템 구성 요소 명시 (썸네일, 텍스트, 배지 등)
+- 정렬·필터 기준 명시
+- 페이지네이션 또는 무한스크롤 방식 명시
+- 최대 표시 개수 및 말줄임 처리 기준 명시
+
+### 폼 / 입력 영역
+- 필드별 입력 타입, 최대/최소 글자수 명시
+- 필수/선택 여부 명시 (필수 필드는 * 표기 여부 포함)
+- 유효성 검사 조건 및 에러 메시지 전문 명시
+- 초기값 및 플레이스홀더 텍스트 명시
+
+### 버튼 / CTA 영역
+- 버튼 레이블 텍스트 (정확한 문구)
+- 활성/비활성 조건
+- 클릭 시 동작 (화면 이동, API 호출, 팝업 노출 등)
+- 처리 중(로딩) 상태 표시 방법
+
+### 팝업 / 다이얼로그
+- 팝업 진입 조건 (어떤 액션에서 열리는가)
+- 팝업 내 구성 요소 전체
+- 닫기 방법 (X 버튼, 배경 클릭, ESC, 버튼 등)
+- 팝업 내 각 버튼의 동작 결과
+
+---
+
+## 에러·엣지 케이스 문서화 기준
+
+### 반드시 포함해야 할 에러 케이스
+1. 네트워크 오류 / 서버 응답 실패
+2. 권한 없음 / 비로그인 상태 접근
+3. 데이터 없음 (Empty State)
+4. 입력값 유효성 오류
+5. 시스템 점검 / 서비스 불가 상태
+
+### 에러 케이스 작성 형식
+\`\`\`
+에러 유형: [에러명]
+발생 조건: [언제 발생하는가]
+표시 방법: [토스트 / 팝업 / 인라인 메시지]
+메시지: "[실제 표시될 메시지 텍스트]"
+액션: [재시도 버튼 / 확인 버튼 / 없음]
+\`\`\`
+
+---
+
+## 버전 관리 규칙
+
+### 버전 표기
+- Major (X.0): 기능 구조가 크게 변경될 때
+- Minor (1.X): 화면 추가·삭제 시
+- Patch (1.0.X): 텍스트·디자인 수정 시
+
+### 변경 이력 기록 항목
+변경 날짜 / 버전 / 변경 내용 요약 / 작성자
+`
+      }
+    };
+
+    // ── MD 미리보기 ──
+    function previewMd(key) {
+      const file = MD_FILES[key];
+      if (!file) return;
+      const area = document.getElementById('mdPreviewArea');
+      document.getElementById('mdPreviewTitle').textContent = file.title;
+      document.getElementById('mdPreviewBody').textContent = file.content;
+      area.style.display = 'block';
+      area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ── MD 다운로드 ──
+    function downloadMdFile(key) {
+      const file = MD_FILES[key];
+      if (!file) return;
+      const blob = new Blob([file.content], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
     // ── Prompt generation ──
     function generatePrompt() {
       const name = document.getElementById('projectName').value.trim();
@@ -1432,6 +2441,11 @@ npx -y @nxui/mcp
       const serviceType = document.getElementById('serviceType').value.trim();
       const targetUser = document.getElementById('targetUser').value.trim();
       const extraRequests = document.getElementById('extraRequests').value.trim();
+
+      // Notion 정책 동기화 URL
+      const notionSyncUrl = (document.getElementById('notionToggle').checked
+        ? document.getElementById('notionSyncUrl')?.value.trim()
+        : '') || '';
 
       // Collect Notion pages (only if toggle is on)
       const notionPages = [];
@@ -1607,6 +2621,26 @@ npx -y @nxui/mcp
         prompt += `별도 정책 문서가 제공되지 않았습니다. 각 기능의 메모와 일반적인 UX 관행을 기반으로 기획서를 작성해 주세요.\n\n`;
       }
 
+      if (notionSyncUrl) {
+        prompt += `## 🔄 메뉴별 정책 동기화\n\n`;
+        prompt += `**동기화 대상 노션 페이지**: ${notionSyncUrl}\n\n`;
+        prompt += `각 메뉴 기획서 작성 완료 후, 아래 형식으로 해당 페이지에 정책 레코드를 **Notion MCP로 즉시 기록**해 주세요.\n`;
+        prompt += `다음 메뉴 작업 시작 전에는 이 페이지를 읽어 기존 정책과의 일관성을 반드시 확인하세요.\n\n`;
+        prompt += `**정책 레코드 형식** (메뉴마다 이 구조로 페이지에 추가):\n`;
+        prompt += `\`\`\`\n`;
+        prompt += `## [메뉴명] — 작성일시\n`;
+        prompt += `### 주요 기능 목록\n`;
+        prompt += `- [기능명]: [동작 정의 — 사용자 행동 → 시스템 반응]\n`;
+        prompt += `### 비활성/제한 조건\n`;
+        prompt += `- [조건 설명]\n`;
+        prompt += `### 에러 처리\n`;
+        prompt += `- [에러 유형]: [표시 방법 + 메시지]\n`;
+        prompt += `### 타 메뉴 참조 관계\n`;
+        prompt += `- [참조 내용 또는 "없음"]\n`;
+        prompt += `### 사용된 어노테이션 번호\n`;
+        prompt += `- [X]번 ~ [Y]번\n`;
+        prompt += `\`\`\`\n\n`;
+      }
 
       const toolLabel = isNxui ? 'NXUI MCP + Figma MCP 사용' : isUiMcpCustom ? `${uiMcpCustomName} + Figma MCP 사용` : isHtml ? 'HTML 파일 생성' : isCustom ? `${customToolName} 사용` : 'Figma MCP 사용';
       const sectionTitle = isHtml ? '🌐 HTML 기획서 작성 지시' : '🎨 피그마 기획서 작성 지시';
@@ -1872,6 +2906,8 @@ npx -y @nxui/mcp
 
       const card = document.getElementById('resultCard');
       card.classList.add('visible');
+      // 프롬프트 탭을 기본으로 활성화
+      switchResultTab('prompt', document.getElementById('tabBtnPrompt'));
       checkDirty();
       setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
     }
@@ -1921,6 +2957,8 @@ npx -y @nxui/mcp
       }
       document.getElementById('notionPageList').innerHTML = '';
       notionCount = 0;
+      const syncUrlEl = document.getElementById('notionSyncUrl');
+      if (syncUrlEl) syncUrlEl.value = '';
 
       // 출력 설정 기본값 복원
       document.querySelectorAll('input[name="output"]').forEach(inp => {
@@ -1953,6 +2991,7 @@ npx -y @nxui/mcp
       // 생성된 프롬프트 제거
       document.getElementById('resultCard').classList.remove('visible');
       document.getElementById('resultBody').textContent = '';
+      document.getElementById('mdPreviewArea').style.display = 'none';
 
       document.querySelector('.btn-reset').classList.remove('dirty');
       window.scrollTo({ top: 0, behavior: 'smooth' });
