@@ -827,6 +827,10 @@
       <div class="form-group" style="margin-bottom:0">
         <label>그리기 도구 선택 <span class="required">*</span></label>
         <div class="output-types" style="margin-bottom:12px">
+          <label class="output-chip" id="chip-tool-html">
+            <input type="radio" name="drawTool" value="html" onchange="onDrawToolChange()" />
+            <span class="dot"></span> 🌐 HTML 파일
+          </label>
           <label class="output-chip" id="chip-tool-figma">
             <input type="radio" name="drawTool" value="figma" checked onchange="onDrawToolChange()" />
             <span class="dot"></span> 🖼 Figma MCP
@@ -834,10 +838,6 @@
           <label class="output-chip" id="chip-tool-nxui">
             <input type="radio" name="drawTool" value="nxui" onchange="onDrawToolChange()" />
             <span class="dot"></span> ✦ NXUI MCP <span style="font-size:11px;opacity:0.7;">(넥슨 디자인 시스템)</span>
-          </label>
-          <label class="output-chip" id="chip-tool-html">
-            <input type="radio" name="drawTool" value="html" onchange="onDrawToolChange()" />
-            <span class="dot"></span> 🌐 HTML 파일
           </label>
           <label class="output-chip" id="chip-tool-custom">
             <input type="radio" name="drawTool" value="custom" onchange="onDrawToolChange()" />
@@ -1716,20 +1716,27 @@ npx -y @nxui/mcp
           prompt += `   - 번호별 설명 항목: 번호 / 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
           prompt += `   - 에러·빈 화면에서 기본 대비 달라진 요소는 별도 섹션으로 구분하여 동일 프레임 내 하단에 추가 (번호는 기본 화면 번호 이어서 부여)\n`;
         } else if (outputs.includes('annotation') && isHtml) {
+          prompt += `4. 기능 어노테이션\n`;
+          prompt += `   **[번호 뱃지 공통 규칙]**\n`;
+          prompt += `   - 와이어프레임 내 각 인터랙티브 요소 우상단에 ①②③… 번호 뱃지를 겹쳐 표기\n`;
+          prompt += `   - 번호 뱃지는 CSS \`position: absolute; z-index: 9999\`로 항상 최상위에 렌더링 — 다른 UI 요소에 절대 가려지지 않아야 함\n`;
+          prompt += `   - 에러·빈 화면에서 기본 화면과 달라진 요소에도 어노테이션 추가 (번호 이어서 부여)\n\n`;
+          prompt += `   **[팝업·모달 내 어노테이션 규칙]**\n`;
+          prompt += `   - 화면 내 팝업, 모달, 드로어, 드롭다운 등 오버레이 요소가 있는 경우, 해당 오버레이 안의 인터랙티브 요소에도 번호 뱃지를 부여한다\n`;
+          prompt += `   - 오버레이 내 번호 뱃지와 설명은 **오버레이가 열려 있을 때만 표시**되어야 함 (오버레이 닫히면 함께 숨겨짐)\n`;
+          prompt += `   - 오버레이 내 번호는 기존 화면 번호에 이어서 부여 (예: 기본 화면 ①~⑤ 이후 팝업 ⑥⑦…)\n\n`;
           if (htmlAnnoStyle === 'tooltip') {
-            prompt += `4. 기능 어노테이션 — **번호 클릭 시 팝업(툴팁) 방식**\n`;
-            prompt += `   - 와이어프레임 내 각 인터랙티브 요소 우상단에 ①②③… 번호 뱃지를 겹쳐 표기\n`;
-            prompt += `   - 번호 뱃지 클릭 시 해당 요소 설명이 팝업(툴팁)으로 나타나도록 구현 (CSS/JS)\n`;
-            prompt += `   - 팝업 내용: 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
-            prompt += `   - 팝업은 화면 밖으로 잘리지 않도록 위치를 자동 조정, 다른 곳 클릭 시 닫힘\n`;
-            prompt += `   - 에러·빈 화면에서 기본 화면과 달라진 요소에도 동일 방식으로 어노테이션 추가 (번호 이어서 부여)\n`;
+            prompt += `   **[표시 방식: 번호 클릭 시 팝업(툴팁)]**\n`;
+            prompt += `   - 번호 뱃지 클릭 시 해당 요소 설명이 툴팁으로 나타나도록 구현 (CSS/JS)\n`;
+            prompt += `   - 툴팁 내용: 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
+            prompt += `   - 툴팁은 화면 밖으로 잘리지 않도록 위치 자동 조정, 다른 곳 클릭 시 닫힘\n`;
+            prompt += `   - 툴팁 z-index는 번호 뱃지보다 높게 설정 (뱃지 위에 겹쳐 표시 가능)\n`;
           } else {
-            prompt += `4. 기능 어노테이션 — **화면 하단 고정 패널 방식**\n`;
-            prompt += `   - 와이어프레임 내 각 인터랙티브 요소 우상단에 ①②③… 번호 뱃지를 겹쳐 표기\n`;
-            prompt += `   - 화면 하단에 어노테이션 패널을 고정 배치, 번호와 설명을 테이블로 정리\n`;
+            prompt += `   **[표시 방식: 화면 하단 고정 패널]**\n`;
+            prompt += `   - 화면 하단에 어노테이션 패널을 고정 배치 (sticky 또는 fixed), 번호와 설명을 테이블로 정리\n`;
             prompt += `   - 번호별 설명 항목: 번호 / 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
             prompt += `   - 패널의 번호와 와이어프레임의 번호가 정확히 대응되어야 함\n`;
-            prompt += `   - 에러·빈 화면에서 기본 화면과 달라진 요소에도 별도 어노테이션 추가 (번호 이어서 부여)\n`;
+            prompt += `   - 팝업·모달이 열리면 해당 오버레이 내 요소의 어노테이션이 패널에 추가 노출, 닫히면 제거\n`;
           }
         }
         if (outputs.includes('policy')) {
