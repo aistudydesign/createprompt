@@ -1,0 +1,3357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI로 기획서 만들기</title>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #22222f;
+      --border: #2e2e40;
+      --accent: #7c6af7;
+      --accent2: #5e54e0;
+      --accent-soft: rgba(124,106,247,0.12);
+      --text: #e8e8f0;
+      --text-muted: #8888aa;
+      --text-dim: #555570;
+      --success: #4ade80;
+      --warning: #facc15;
+      --error: #f87171;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      padding: 40px 20px 80px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .header .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(124,106,247,0.3);
+      color: #a89ef9;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 99px;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+    }
+    .header h1 {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 700;
+      background: linear-gradient(135deg, #c4bbff 0%, #7c6af7 50%, #5e54e0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+    .header p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* ── Section card ── */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+    .section:focus-within { border-color: rgba(124,106,247,0.5); }
+    .section-disabled {
+      opacity: 0.38;
+      pointer-events: none;
+      user-select: none;
+    }
+    .section-disabled .section-number {
+      background: var(--text-dim);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .section-number {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .section-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    /* ── Form elements ── */
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+    }
+    label .required {
+      color: var(--accent);
+      margin-left: 2px;
+    }
+    input[type="text"], input[type="url"], textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      resize: vertical;
+    }
+    input[type="text"]:focus, input[type="url"]:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,106,247,0.15);
+    }
+    input::placeholder, textarea::placeholder { color: var(--text-dim); }
+    textarea { min-height: 90px; line-height: 1.6; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media(max-width: 580px) { .form-row { grid-template-columns: 1fr; } }
+    .form-group { margin-bottom: 16px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    /* ── Menu builder ── */
+    .menu-list { display: flex; flex-direction: column; gap: 14px; }
+
+    .menu-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      position: relative;
+    }
+    .menu-item-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .menu-drag {
+      color: var(--text-dim);
+      cursor: grab;
+      font-size: 16px;
+      user-select: none;
+    }
+    .menu-index {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+    .menu-item-header input {
+      flex: 1;
+      background: var(--surface);
+      border-color: transparent;
+      font-weight: 500;
+    }
+    .btn-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+    .btn-remove:hover { color: var(--error); background: rgba(248,113,113,0.1); }
+
+    .feature-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .feature-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .feature-row input { font-size: 13px; }
+    .btn-remove-feat {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 15px;
+      padding: 2px 5px;
+      border-radius: 4px;
+      transition: color 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-remove-feat:hover { color: var(--error); }
+
+    .btn-add-feat {
+      background: none;
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-add-feat:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+    .btn-add-menu {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background: none;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 6px;
+    }
+    .btn-add-menu:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+    /* ── Sub-menu ── */
+    .submenu-section {
+      margin-top: 14px;
+      border-top: 1px dashed var(--border);
+      padding-top: 12px;
+    }
+    .submenu-section-label {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .submenu-list { display: flex; flex-direction: column; gap: 8px; }
+    .submenu-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-left: 2px solid #7abfff;
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+    .submenu-item-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .submenu-index {
+      font-size: 11px;
+      font-weight: 600;
+      color: #7abfff;
+      background: rgba(122,191,255,0.1);
+      padding: 2px 8px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+    .btn-add-submenu {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-dim);
+      font-size: 12px;
+      font-family: inherit;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+    .btn-add-submenu:hover { border-color: #7abfff; color: #7abfff; background: rgba(122,191,255,0.06); }
+
+    /* ── Feature description ── */
+    .feat-desc-wrap { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .feat-name-row { display: flex; gap: 6px; align-items: center; }
+    .feat-name-row input { flex: 1; }
+    .btn-toggle-desc {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-family: inherit;
+      padding: 3px 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-toggle-desc:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-toggle-desc.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .feat-desc {
+      display: none;
+      font-size: 12px;
+      min-height: 50px;
+      padding: 7px 10px;
+      resize: vertical;
+    }
+    .feat-desc.visible { display: block; }
+
+    /* ── Notion section ── */
+    .notion-page-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .notion-page-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+    .notion-page-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .notion-page-badge {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 2px 8px;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+    .notion-page-header input.notion-label {
+      flex: 1;
+      background: var(--surface);
+      border-color: transparent;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 10px;
+    }
+    .notion-url-wrap {
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .notion-url-wrap .notion-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      pointer-events: none;
+    }
+    .notion-url-wrap input {
+      padding-left: 38px;
+    }
+    .notion-summary { font-size: 13px; }
+    .notion-hint {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+    .notion-hint a { color: var(--accent); text-decoration: none; }
+
+    .btn-add-notion {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 11px;
+      background: none;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 4px;
+    }
+    .btn-add-notion:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+    /* ── Figma section ── */
+    .figma-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 40px; height: 22px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input { display: none; }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 99px;
+      transition: background 0.2s;
+    }
+    .toggle-thumb {
+      position: absolute;
+      width: 16px; height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      top: 3px; left: 3px;
+      transition: left 0.2s;
+    }
+    .toggle-switch input:checked ~ .toggle-track { background: var(--accent); }
+    .toggle-switch input:checked ~ .toggle-thumb { left: 21px; }
+    .toggle-label { font-size: 14px; color: var(--text-muted); }
+
+    .figma-fields { display: none; }
+    .figma-fields.active { display: block; }
+
+    .figma-coords {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    @media(max-width: 520px) { .figma-coords { grid-template-columns: 1fr 1fr; } }
+
+    .tip-box {
+      background: rgba(250,204,21,0.06);
+      border: 1px solid rgba(250,204,21,0.2);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #d4b34a;
+      line-height: 1.6;
+      margin-top: 14px;
+    }
+    .tip-box strong { color: var(--warning); }
+
+    /* ── Output type ── */
+    .output-types {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .output-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 7px 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .output-chip input { display: none; }
+    .output-chip:has(input:checked), .output-chip.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #c4bbff;
+    }
+    .output-chip .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.2s;
+    }
+    .output-chip:has(input:checked) .dot { background: var(--accent); }
+
+    /* ── Test fill button ── */
+    .btn-fill-test {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      background: none;
+      border: 1px dashed rgba(124,106,247,0.4);
+      border-radius: 99px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-family: inherit;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-fill-test:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .btn-reset {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      margin-left: 8px;
+      background: none;
+      border: 1px dashed rgba(248,113,113,0.35);
+      border-radius: 99px;
+      color: var(--text-dim);
+      font-size: 13px;
+      font-family: inherit;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover {
+      border-color: var(--error);
+      color: var(--error);
+      background: rgba(248,113,113,0.08);
+    }
+    .btn-reset.dirty {
+      border-style: solid;
+      border-color: var(--error);
+      color: var(--error);
+      background: rgba(248,113,113,0.08);
+      font-weight: 600;
+      box-shadow: 0 0 0 3px rgba(248,113,113,0.12);
+    }
+    .btn-reset.dirty:hover {
+      background: rgba(248,113,113,0.16);
+      box-shadow: 0 0 0 4px rgba(248,113,113,0.2);
+    }
+
+    /* ── Step Wizard ── */
+    .step-tabs-wrap {
+      margin-bottom: 8px;
+    }
+    .step-tabs {
+      display: flex;
+      gap: 4px;
+    }
+    .step-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 6px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: inherit;
+      min-width: 0;
+    }
+    .step-tab:hover { border-color: rgba(124,106,247,0.4); background: var(--surface2); }
+    .step-tab.active { border-color: var(--accent); background: var(--accent-soft); }
+    .step-tab-disabled { opacity: 0.35 !important; pointer-events: none !important; }
+    .step-tab-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      font-size: 11px; font-weight: 700;
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-tab.active .step-tab-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .step-tab-label {
+      font-size: 11px; font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .step-tab.active .step-tab-label { color: var(--text); }
+    .step-tab-opt {
+      font-size: 9px; font-weight: 700;
+      color: var(--text-dim);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 5px;
+      letter-spacing: 0.2px;
+    }
+    .step-tab.active .step-tab-opt {
+      color: #a89ef9;
+      background: rgba(124,106,247,0.15);
+      border-color: rgba(124,106,247,0.3);
+    }
+
+    .step-panel { display: none; }
+    .step-panel.active { display: block; animation: fadeIn 0.2s ease; }
+
+    .step-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 13px; font-weight: 600;
+      font-family: inherit;
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-step:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .btn-step.next {
+      color: var(--text);
+      border-color: rgba(124,106,247,0.5);
+      background: var(--accent-soft);
+    }
+    .btn-step.next:hover { background: rgba(124,106,247,0.22); }
+
+    /* Wizard card wrapper */
+    /* ── LNB ── */
+    .lnb {
+      position: fixed;
+      left: calc(50% - 595px);
+      top: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 100;
+      width: 160px;
+    }
+    .lnb-tab {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      text-align: left;
+      transition: all 0.2s;
+      line-height: 1.4;
+      width: 100%;
+    }
+    .lnb-tab:hover {
+      background: var(--surface2);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .lnb-tab.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: rgba(124,106,247,0.3);
+    }
+    .lnb-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .lnb-tab.active .lnb-num {
+      background: var(--accent);
+      color: #fff;
+    }
+    .lnb-label {
+      word-break: keep-all;
+    }
+
+    .wizard-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 0;
+    }
+    .wizard-card .step-tabs-wrap {
+      margin: -20px -20px 16px;
+      padding: 0;
+      border-radius: var(--radius) var(--radius) 0 0;
+      overflow: hidden;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .wizard-card .step-tabs {
+      padding: 12px 12px 12px;
+    }
+
+    /* Generate button below wizard card */
+    .generate-below {
+      text-align: center;
+      padding: 20px 0 8px;
+    }
+    .btn-generate-fab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 28px;
+      color: #fff;
+      font-size: 13px; font-weight: 700;
+      font-family: inherit;
+      padding: 13px 22px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(124,106,247,0.45);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-generate-fab:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,106,247,0.55); }
+    .btn-generate-fab:active { transform: translateY(0); }
+
+    /* ── Generate button ── */
+    .generate-area {
+      text-align: center;
+      margin: 32px 0 24px;
+    }
+    .btn-generate {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #7c6af7, #5e54e0);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 14px 36px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(124,106,247,0.4);
+      transition: all 0.2s;
+    }
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(124,106,247,0.5);
+    }
+    .btn-generate:active { transform: translateY(0); }
+
+    /* ── Result ── */
+    .result-card {
+      display: none;
+      background: var(--surface);
+      border: 1px solid rgba(124,106,247,0.3);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-top: 8px;
+    }
+    .result-card.visible { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .result-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #a89ef9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .result-title::before {
+      content: '';
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      display: inline-block;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-action {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-family: inherit;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-action:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .btn-action.copied { border-color: var(--success); color: var(--success); background: rgba(74,222,128,0.08); }
+
+    .result-body {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #ccc;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .result-body::-webkit-scrollbar { width: 6px; }
+    .result-body::-webkit-scrollbar-track { background: transparent; }
+    .result-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    .how-to {
+      margin-top: 20px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(124,106,247,0.2);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+    .how-to-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #a89ef9;
+      margin-bottom: 10px;
+    }
+    .how-to-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .how-to-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .step-num {
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Result Tabs ── */
+    .result-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+    .result-tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-tab:hover { color: var(--text); }
+    .result-tab.active { color: #a89ef9; border-bottom-color: var(--accent); }
+
+    /* ── Setup Tab ── */
+    .setup-section {
+      margin-bottom: 28px;
+    }
+    .setup-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-dim);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .md-file-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 8px;
+      transition: border-color 0.2s;
+    }
+    .md-file-card:hover { border-color: rgba(124,106,247,0.4); }
+    .md-file-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .md-file-info { flex: 1; min-width: 0; }
+    .md-file-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .md-file-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .md-file-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      align-items: flex-start;
+    }
+    .btn-md {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-md:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .btn-md.external { color: #a89ef9; border-color: rgba(124,106,247,0.3); background: var(--accent-soft); }
+    .btn-md.external:hover { background: rgba(124,106,247,0.2); }
+
+    .placement-guide {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .placement-guide code {
+      background: rgba(124,106,247,0.12);
+      border: 1px solid rgba(124,106,247,0.2);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Menlo','Monaco','Courier New',monospace;
+      font-size: 11px;
+      color: #c4b9fa;
+    }
+
+    .agent-card {
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .agent-badge {
+      background: rgba(124,106,247,0.15);
+      border: 1px solid rgba(124,106,247,0.3);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #a89ef9;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .agent-info { flex: 1; }
+    .agent-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .agent-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+    .agent-pending {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--warning);
+      background: rgba(250,204,21,0.08);
+      border: 1px solid rgba(250,204,21,0.2);
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-top: 6px;
+    }
+
+    .tip-list { display: flex; flex-direction: column; gap: 8px; }
+    .tip-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .tip-num {
+      width: 20px; height: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .tip-body { flex: 1; }
+    .tip-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .tip-desc { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+    .tip-desc code {
+      background: rgba(124,106,247,0.1);
+      border-radius: 3px;
+      padding: 0 5px;
+      font-family: 'Menlo','Monaco','Courier New',monospace;
+      font-size: 11px;
+      color: #c4b9fa;
+    }
+
+    /* ── Setup Steps ── */
+    .setup-step {
+      position: relative;
+      padding-left: 52px;
+      padding-bottom: 32px;
+    }
+    .setup-step:last-child { padding-bottom: 0; }
+    .setup-step::before {
+      content: '';
+      position: absolute;
+      left: 18px;
+      top: 36px;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .setup-step:last-child::before { display: none; }
+    .setup-step-num {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 36px; height: 36px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 800;
+      color: #a89ef9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .setup-step-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      margin-bottom: 12px;
+    }
+    .setup-step-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .setup-step-badge {
+      font-size: 11px;
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.25);
+      color: var(--success);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-weight: 600;
+    }
+    .setup-step-content {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="badge">✦ Claude × Figma × Notion</div>
+      <h1>AI로 기획서 만들기</h1>
+      <p>Claude로 기획서 작성, 어렵지 않아요! 😊<br/>가이드를 따라 초기 셋팅을 진행하고, 프롬프트를 생성해서 바로 시작해 보세요.</p>
+      <button class="btn-fill-test" onclick="fillTestData()">🧪 테스트 데이터 채우기</button>
+      <button class="btn-reset" onclick="resetAll()">↺ 초기화</button>
+    </div>
+
+    <!-- LNB -->
+    <nav class="lnb" id="lnb">
+      <button class="lnb-tab active" id="lnb-setup" onclick="lnbSwitch('setup')">
+        <span class="lnb-num">1</span>
+        <span class="lnb-label">Claude 프로젝트 셋팅하기</span>
+      </button>
+      <button class="lnb-tab" id="lnb-prompt" onclick="lnbSwitch('prompt')">
+        <span class="lnb-num">2</span>
+        <span class="lnb-label">프롬프트 생성하기</span>
+      </button>
+      <button class="lnb-tab" id="lnb-edit" onclick="lnbSwitch('edit')">
+        <span class="lnb-num">3</span>
+        <span class="lnb-label">기획서 수정하기</span>
+      </button>
+      <button class="lnb-tab" id="lnb-merge" onclick="lnbSwitch('merge')">
+        <span class="lnb-num">4</span>
+        <span class="lnb-label">기획서 병합 및 배포하기</span>
+      </button>
+    </nav>
+
+    <!-- Setup Section (LNB tab 1) -->
+    <div id="setupSection">
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:24px; line-height:1.6;">
+        프롬프트 실행 전 아래 순서로 Claude 프로젝트를 셋팅하면 일관된 품질의 기획서를 반복 생성할 수 있습니다.
+      </p>
+
+      <!-- Step 1: MD 파일 -->
+      <div class="setup-step">
+        <div class="setup-step-num">1</div>
+        <div class="setup-step-head">
+          <div class="setup-step-title">📄 MD 파일 설정</div>
+        </div>
+        <div class="setup-step-content">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.6;">
+            아래 3개 파일을 Claude 프로젝트 루트에 배치하면 Claude가 일관된 방식으로 기획서를 작성합니다.
+          </p>
+          <div class="md-file-card">
+            <div class="md-file-icon">🧠</div>
+            <div class="md-file-info">
+              <div class="md-file-name">CLAUDE.md</div>
+              <div class="md-file-desc">Claude의 작업 행동 원칙 정의. 불필요한 변경 방지, 단순성 우선 원칙 등 실수 패턴을 사전 차단합니다. andrej-karpathy-skills의 CLAUDE.md를 사용하세요.</div>
+              <div style="margin-top:8px; background:var(--surface2); border-radius:5px; padding:6px 10px; font-size:11px; font-family:'Menlo','Monaco','Courier New',monospace; color:var(--text-muted); word-break:break-all;">
+                https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md
+              </div>
+            </div>
+            <div class="md-file-actions">
+              <button class="btn-md external" onclick="window.open('https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md','_blank')">↗ GitHub</button>
+              <button class="btn-md external" onclick="window.open('https://raw.githubusercontent.com/multica-ai/andrej-karpathy-skills/main/CLAUDE.md','_blank')">⬇ Raw</button>
+            </div>
+          </div>
+          <div class="md-file-card">
+            <div class="md-file-icon">✍️</div>
+            <div class="md-file-info">
+              <div class="md-file-name">writing_rule.md</div>
+              <div class="md-file-desc">용어·문체·화면 명칭 통일 규칙. 여러 사람이 작업해도 같은 톤과 표현으로 기획서가 작성됩니다. 팀 상황에 맞게 수정하여 사용하세요.</div>
+            </div>
+            <div class="md-file-actions">
+              <button class="btn-md" onclick="previewMd('writing_rule')">👁 미리보기</button>
+              <button class="btn-md" onclick="downloadMdFile('writing_rule')">⬇ 다운로드</button>
+            </div>
+          </div>
+          <div class="md-file-card">
+            <div class="md-file-icon">📐</div>
+            <div class="md-file-info">
+              <div class="md-file-name">instruction.md</div>
+              <div class="md-file-desc">기획서 프레임 구조, 섹션별 작성 항목, 에러 케이스 문서화 기준 정의. Claude가 이 파일을 참조해 일관된 기획서 구조를 유지합니다.</div>
+            </div>
+            <div class="md-file-actions">
+              <button class="btn-md" onclick="previewMd('instruction')">👁 미리보기</button>
+              <button class="btn-md" onclick="downloadMdFile('instruction')">⬇ 다운로드</button>
+            </div>
+          </div>
+          <div class="placement-guide" style="margin-top:10px;">
+            <strong style="color:var(--text); display:block; margin-bottom:6px;">📂 파일 배치 위치</strong>
+            Claude Code 프로젝트 루트에 배치하거나, Claude.ai Project의 "Project instructions"에 내용을 붙여넣으세요.<br>
+            <code>프로젝트_루트/CLAUDE.md</code> &nbsp;·&nbsp;
+            <code>프로젝트_루트/writing_rule.md</code> &nbsp;·&nbsp;
+            <code>프로젝트_루트/instruction.md</code>
+          </div>
+          <div id="mdPreviewArea" style="display:none; margin-top:14px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <div style="font-size:12px; font-weight:700; color:#a89ef9;" id="mdPreviewTitle"></div>
+              <button class="btn-action" style="font-size:11px;" onclick="document.getElementById('mdPreviewArea').style.display='none'">✕ 닫기</button>
+            </div>
+            <div class="result-body" id="mdPreviewBody" style="max-height:280px; font-size:12px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: 서브 에이전트 -->
+      <div class="setup-step">
+        <div class="setup-step-num">2</div>
+        <div class="setup-step-head">
+          <div class="setup-step-title">🤖 서브 에이전트 설치</div>
+        </div>
+        <div class="setup-step-content">
+          <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px; line-height:1.6;">
+            에이전트 파일을 <code style="background:rgba(124,106,247,0.1);border-radius:3px;padding:0 5px;font-size:11px;color:#c4b9fa;">.claude/agents/</code> 폴더에 배치하면 Claude Code에서 서브 에이전트로 호출할 수 있습니다.
+          </p>
+          <div class="agent-card">
+            <div class="agent-badge">AGENT</div>
+            <div class="agent-info">
+              <div class="agent-name">리뷰어 에이전트 (reviewer.md)</div>
+              <div class="agent-desc">생성된 기획서의 완성도를 검토합니다. 누락된 에러 케이스, 불명확한 동작 정의, 정책 문서와의 불일치를 자동으로 찾아냅니다. 작업 완료 후 <code style="background:rgba(124,106,247,0.1);border-radius:3px;padding:0 4px;font-size:11px;color:#c4b9fa;">/reviewer</code>로 호출하세요.</div>
+              <div class="agent-pending">⏳ 파일 준비 중 — 곧 제공될 예정입니다</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: 작업 팁 -->
+      <div class="setup-step">
+        <div class="setup-step-num">3</div>
+        <div class="setup-step-head">
+          <div class="setup-step-title">💡 Claude Code 기획서 작업 팁</div>
+        </div>
+        <div class="setup-step-content">
+          <div class="tip-list">
+            <div class="tip-item">
+              <div class="tip-num">1</div>
+              <div class="tip-body">
+                <div class="tip-title">Project 단위로 컨텍스트 유지하기</div>
+                <div class="tip-desc">Claude.ai의 <strong style="color:var(--text)">Project</strong> 기능을 활용하면 CLAUDE.md, writing_rule.md, instruction.md를 Project Instructions에 등록해 매번 붙여넣지 않아도 됩니다. 서비스별로 Project를 나눠 관리하세요.</div>
+              </div>
+            </div>
+            <div class="tip-item">
+              <div class="tip-num">2</div>
+              <div class="tip-body">
+                <div class="tip-title">Slash Command로 반복 작업 단축하기</div>
+                <div class="tip-desc"><code>.claude/commands/</code> 폴더에 <code>review.md</code>, <code>add-state.md</code> 등을 만들어두면 <code>/review</code>, <code>/add-state</code>로 즉시 호출할 수 있습니다. 자주 쓰는 기획서 작업 패턴을 커맨드로 등록해두세요.</div>
+              </div>
+            </div>
+            <div class="tip-item">
+              <div class="tip-num">3</div>
+              <div class="tip-body">
+                <div class="tip-title">메뉴 단위로 나눠 작업 → 리뷰 루프 만들기</div>
+                <div class="tip-desc">메뉴 단위로 나눠 요청하고 각 메뉴 완료 후 리뷰어 에이전트를 돌리세요. "화면 생성 → 노션 동기화 → 리뷰 → 누락 보완"을 한 사이클로 묶으면 뒷 메뉴로 갈수록 일관성이 유지됩니다.</div>
+              </div>
+            </div>
+            <div class="tip-item">
+              <div class="tip-num">4</div>
+              <div class="tip-body">
+                <div class="tip-title">스크린샷·레퍼런스 이미지 적극 활용하기</div>
+                <div class="tip-desc">Claude Code는 이미지를 직접 이해합니다. 참고할 기존 화면 캡처나 경쟁사 레퍼런스를 함께 첨부하면 더 정확한 레이아웃으로 기획서를 생성합니다. 특히 복잡한 목록형 화면에서 효과적입니다.</div>
+              </div>
+            </div>
+            <div class="tip-item">
+              <div class="tip-num">5</div>
+              <div class="tip-body">
+                <div class="tip-title">수정 요청은 구체적인 위치와 함께 하기</div>
+                <div class="tip-desc">"2번 화면의 에러 상태 어노테이션 3번 — 네트워크 오류 시 재시도 버튼 추가해줘" 처럼 화면명·번호·수정 내용을 함께 명시하면 Claude가 정확히 해당 부분만 수정합니다. 모호한 수정 요청은 의도치 않은 변경을 유발합니다.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /setupSection -->
+
+    <!-- Edit Section (LNB tab 3) -->
+    <div id="editSection" style="display:none">
+
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:24px; line-height:1.6;">
+        기획서 수정 작업을 위한 가이드입니다. 서비스 연결 후 아래 항목을 참고해 수정을 진행하세요.
+      </p>
+
+      <!-- Step 1: UI 수정 -->
+      <div class="setup-step">
+        <div class="setup-step-num">1</div>
+        <div class="setup-step-head">
+          <div class="setup-step-title">🖼️ UI 수정</div>
+        </div>
+        <div class="setup-step-content">
+          <p style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+            준비 중입니다. 내용이 곧 추가될 예정입니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 2: 디스크립션 -->
+      <div class="setup-step">
+        <div class="setup-step-num">2</div>
+        <div class="setup-step-head">
+          <div class="setup-step-title">📝 디스크립션</div>
+        </div>
+        <div class="setup-step-content">
+          <p style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+            준비 중입니다. 내용이 곧 추가될 예정입니다.
+          </p>
+        </div>
+      </div>
+
+    </div><!-- /editSection -->
+
+    <!-- Merge Section (LNB tab 4) -->
+    <div id="mergeSection" style="display:none">
+
+      <!-- 입력 카드 -->
+      <div class="wizard-card">
+        <div class="step-tabs-wrap">
+          <div class="step-tabs">
+            <button class="step-tab active">
+              <span class="step-tab-num">1</span>
+              <span class="step-tab-label">기본 정보</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="section" style="margin-bottom:0; border:none; background:transparent; padding: 20px 0 0;">
+          <div class="section-header">
+            <div class="section-number">1</div>
+            <div class="section-title">병합 및 배포 정보</div>
+          </div>
+          <p style="font-size:13px; color:var(--text-muted); line-height:1.6;">
+            준비 중입니다. 내용이 곧 추가될 예정입니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 생성 버튼 -->
+      <div class="generate-below">
+        <button class="btn-generate-fab" onclick="">
+          <span>✦</span> 생성하기
+        </button>
+      </div>
+
+      <!-- 결과 영역 -->
+      <div class="result-card" id="mergeResultCard" style="display:none">
+        <div class="result-toolbar">
+          <div class="result-title">생성된 결과</div>
+          <div class="result-actions">
+            <button class="btn-action">📋 복사</button>
+            <button class="btn-action">⬇ 저장</button>
+          </div>
+        </div>
+        <div class="result-body" id="mergeResultBody"></div>
+      </div>
+
+    </div><!-- /mergeSection -->
+
+    <!-- Prompt Section (LNB tab 2) -->
+    <div id="promptSection" style="display:none">
+
+    <!-- Wizard Card -->
+    <div class="wizard-card">
+
+    <!-- Step Tabs -->
+    <div class="step-tabs-wrap">
+      <div class="step-tabs" id="stepTabs">
+        <button class="step-tab active" id="steptab-1" onclick="goToStep(1)">
+          <span class="step-tab-num">1</span>
+          <span class="step-tab-label">기본 정보</span>
+        </button>
+        <button class="step-tab" id="steptab-2" onclick="goToStep(2)">
+          <span class="step-tab-num">2</span>
+          <span class="step-tab-label">메뉴 구조</span>
+        </button>
+        <button class="step-tab" id="steptab-3" onclick="goToStep(3)">
+          <span class="step-tab-num">3</span>
+          <span class="step-tab-label">노션 문서</span>
+          <span class="step-tab-opt">선택</span>
+        </button>
+        <button class="step-tab" id="steptab-4" onclick="goToStep(4)">
+          <span class="step-tab-num">4</span>
+          <span class="step-tab-label">정책 동기화</span>
+          <span class="step-tab-opt">선택</span>
+        </button>
+        <button class="step-tab" id="steptab-5" onclick="goToStep(5)">
+          <span class="step-tab-num">5</span>
+          <span class="step-tab-label">출력 설정</span>
+        </button>
+        <button class="step-tab" id="steptab-6" onclick="goToStep(6)">
+          <span class="step-tab-num">6</span>
+          <span class="step-tab-label">위치 지정</span>
+          <span class="step-tab-opt">선택</span>
+        </button>
+        <button class="step-tab" id="steptab-7" onclick="goToStep(7)">
+          <span class="step-tab-num">7</span>
+          <span class="step-tab-label">추가 요청</span>
+          <span class="step-tab-opt">선택</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-panel active" id="step-panel-1">
+    <!-- Section 1: 프로젝트 기본 정보 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">1</div>
+        <div class="section-title">프로젝트 기본 정보</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>프로젝트 이름 <span class="required">*</span></label>
+          <input type="text" id="projectName" placeholder="예) 넥슨 마이페이지 리뉴얼" />
+        </div>
+        <div class="form-group">
+          <label>서비스 유형</label>
+          <input type="text" id="serviceType" placeholder="예) 모바일 앱, 웹 서비스, 어드민" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>프로젝트 컨셉 <span class="required">*</span></label>
+        <textarea id="projectConcept" placeholder="예) 게임 유저들이 자신의 계정 정보를 한 눈에 확인하고, 게임 내 재화 및 아이템을 효율적으로 관리할 수 있는 마이페이지. 심플하고 게이미피케이션 요소를 가미한 UI 방향성."></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>타겟 사용자</label>
+        <input type="text" id="targetUser" placeholder="예) 20~30대 국내 PC 게임 유저, 월간 활성 유저 기준" />
+      </div>
+    </div>
+
+      <div class="step-nav">
+        <div></div>
+        <button class="btn-step next" onclick="goToStep(2)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-1 -->
+
+    <!-- Step 2 -->
+    <div class="step-panel" id="step-panel-2">
+    <!-- Section 2: 메뉴 구조 & 기능 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">2</div>
+        <div class="section-title">메뉴 구조 & 기능 정의</div>
+        <div class="section-desc">메뉴마다 필요한 기능을 입력해 주세요</div>
+      </div>
+      <div class="menu-list" id="menuList"></div>
+      <button class="btn-add-menu" onclick="addMenu()">
+        <span>＋</span> 메뉴 추가
+      </button>
+    </div>
+
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(1)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(3)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-2 -->
+
+    <!-- Step 3 -->
+    <div class="step-panel" id="step-panel-3">
+    <!-- Section 3: 노션 정책 문서 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">3</div>
+        <div class="section-title">노션 정책 문서 연결</div>
+        <label class="figma-toggle" for="notionToggle" style="margin-left:auto; margin-bottom:0">
+          <div class="toggle-switch">
+            <input type="checkbox" id="notionToggle" onchange="toggleNotion()" />
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </div>
+          <span class="toggle-label" id="notionToggleLabel">사용 안 함</span>
+        </label>
+      </div>
+      <div id="notionBody" style="display:none">
+        <div class="notion-page-list" id="notionPageList"></div>
+        <button class="btn-add-notion" onclick="addNotionPage()">
+          <span>＋</span> 노션 페이지 추가
+        </button>
+        <div class="notion-hint" style="margin-top:12px">
+          노션 페이지를 공유 또는 퍼블리시한 뒤 URL을 입력해 주세요.
+          Claude가 Notion MCP를 통해 모든 문서를 읽고 정책을 기획서에 반영합니다.
+        </div>
+      </div>
+    </div>
+
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(2)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(4)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-3 -->
+
+    <!-- Step 4 -->
+    <div class="step-panel" id="step-panel-4">
+    <!-- Section 4: 메뉴별 정책 동기화 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">4</div>
+        <div class="section-title">메뉴별 정책 동기화</div>
+        <span style="margin-left:auto; font-size:11px; background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.25); color:var(--success); border-radius:4px; padding:2px 8px; font-weight:600;">권장</span>
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:14px; line-height:1.6;">
+        각 메뉴 기획서 생성 후 Claude가 해당 화면의 정책을 아래 노션 페이지에 자동으로 기록합니다.
+        다음 메뉴 작업 시 이 페이지를 먼저 읽어 용어·조건·어노테이션 번호의 일관성을 유지합니다.
+      </div>
+      <div class="form-group">
+        <label>정책 동기화 노션 페이지</label>
+        <div class="notion-url-wrap">
+          <span class="notion-icon">🗂</span>
+          <input type="url" id="notionSyncUrl" class="notion-url-input"
+            placeholder="정책 기록 전용 노션 페이지 URL (쓰기 권한 필요)"
+            oninput="checkDirty()" />
+        </div>
+        <div style="font-size:11px; color:var(--text-dim); margin-top:6px; line-height:1.5;">
+          ※ 3번 읽기용 정책 문서와 별도로, 기획서 작성 결과를 축적하는 전용 페이지입니다.<br/>
+          ※ Notion MCP에 해당 페이지의 <strong style="color:var(--text-muted)">편집(Edit) 권한</strong>이 있어야 합니다.
+        </div>
+      </div>
+
+      <!-- Notion MCP 연결 가이드 -->
+      <div class="form-group" style="margin-top:4px;">
+        <label>Notion MCP 연결 가이드</label>
+        <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden;">
+          <button onclick="toggleMcpGuide('notion', this)" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:13px; font-weight:600;">
+            <span style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:14px;">📘</span> 연결 방법 보기
+            </span>
+            <span style="font-size:11px; transition:transform 0.2s;">▼</span>
+          </button>
+          <div id="mcpGuideNotion" style="display:none; padding:0 16px 16px; flex-direction:column; gap:14px;">
+            <div>
+              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">① Claude Code — /mcp 로 연결</div>
+              <div style="font-size:12px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">
+                Claude Code 터미널에서 <code style="background:rgba(124,106,247,0.12);border:1px solid rgba(124,106,247,0.2);border-radius:4px;padding:1px 6px;font-family:'Menlo','Monaco','Courier New',monospace;font-size:11px;color:#c4b9fa;">/mcp</code> 를 입력하면 MCP 서버 목록이 표시됩니다. 목록에서 Notion을 선택해 연결하세요.
+              </div>
+              <div style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-family:'Menlo','Monaco','Courier New',monospace; font-size:12px; color:#c4b9fa;">/mcp</div>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">② Claude.ai (Cowork) — 통합 설정에서 연결</div>
+              <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+                Claude.ai → 설정 → 통합(Integrations) → Notion 추가 → 허용 범위 설정.<br/>
+                정책 동기화 기능을 사용한다면 <strong style="color:var(--text)">편집(Edit) 권한</strong>을 반드시 허용해야 합니다.
+              </div>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">③ 동기화 페이지 권한 확인</div>
+              <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+                동기화 대상 노션 페이지에 Notion MCP 봇을 <strong style="color:var(--text)">편집자(Editor)</strong>로 추가해야 합니다.<br/>
+                페이지 공유 설정 → "연결 추가" → Notion MCP 봇 검색 후 편집자 권한 부여.
+              </div>
+            </div>
+            <div style="background:rgba(250,204,21,0.06); border:1px solid rgba(250,204,21,0.2); border-radius:6px; padding:10px 12px;">
+              <div style="font-size:11px; font-weight:700; color:var(--warning); margin-bottom:4px;">⚠ 읽기 전용 문서 vs 동기화 페이지</div>
+              <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+                3번 섹션의 "노션 정책 문서"는 읽기 전용이어도 됩니다.<br/>
+                이 섹션의 "정책 동기화" 페이지만 편집 권한이 필요합니다.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(3)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(5)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-4 -->
+
+    <!-- Step 5 -->
+    <div class="step-panel" id="step-panel-5">
+    <!-- Section 5: 기획서 출력 설정 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">5</div>
+        <div class="section-title">기획서 출력 설정</div>
+      </div>
+      <div class="form-group">
+        <label>포함할 산출물 <span class="required">*</span></label>
+        <div class="output-types">
+          <label class="output-chip" id="chip-wireframe">
+            <input type="checkbox" name="output" value="wireframe" checked onchange="syncChip(this)" />
+            <span class="dot"></span> 🔲 와이어프레임
+          </label>
+          <label class="output-chip" id="chip-flow">
+            <input type="checkbox" name="output" value="flow" onchange="syncChip(this)" />
+            <span class="dot"></span> 🔀 유저 플로우
+          </label>
+          <label class="output-chip" id="chip-annotation">
+            <input type="checkbox" name="output" value="annotation" checked onchange="syncChip(this)" />
+            <span class="dot"></span> 📝 기능 어노테이션
+          </label>
+          <label class="output-chip" id="chip-component">
+            <input type="checkbox" name="output" value="component" onchange="syncChip(this)" />
+            <span class="dot"></span> 🧩 컴포넌트 목록
+          </label>
+          <label class="output-chip" id="chip-policy">
+            <input type="checkbox" name="output" value="policy" checked onchange="syncChip(this)" />
+            <span class="dot"></span> 📋 정책 연결 메모
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>기획서 상세 수준</label>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);border:1px solid rgba(124,106,247,0.35);color:#a89ef9;font-size:13px;font-weight:600;padding:6px 14px;border-radius:99px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+            표준 — 엣지 케이스·에러 상태·빈 화면 등 모든 분기 처리 포함
+          </span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>그리기 도구 선택 <span class="required">*</span></label>
+        <div class="output-types" style="margin-bottom:12px">
+          <label class="output-chip" id="chip-tool-html">
+            <input type="radio" name="drawTool" value="html" checked onchange="onDrawToolChange()" />
+            <span class="dot"></span> 🌐 HTML 파일
+          </label>
+          <label class="output-chip" id="chip-tool-figma">
+            <input type="radio" name="drawTool" value="figma" onchange="onDrawToolChange()" />
+            <span class="dot"></span> 🖼 Figma MCP
+          </label>
+          <label class="output-chip" id="chip-tool-custom">
+            <input type="radio" name="drawTool" value="custom" onchange="onDrawToolChange()" />
+            <span class="dot"></span> ✏ 기타
+          </label>
+        </div>
+        <!-- HTML 안내 -->
+        <div id="htmlInfoBox" style="display:none;">
+          <div style="background:rgba(74,222,128,0.06); border:1px solid rgba(74,222,128,0.25); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px;">
+            <div style="font-size:13px; font-weight:600; color:#4ade80; margin-bottom:4px;">🌐 HTML 파일로 기획서를 생성합니다</div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
+              Figma 대신 <strong style="color:var(--text)">브라우저에서 바로 열 수 있는 HTML 파일</strong>로 와이어프레임과 상세 디스크립션을 만들어 드립니다.<br/>
+              별도 MCP 연결 없이 Claude가 직접 파일을 생성합니다.
+            </div>
+          </div>
+          <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; display:flex; flex-direction:column; gap:10px;">
+            <div style="font-size:12px; font-weight:700; color:#4ade80; letter-spacing:0.5px;">생성되는 파일 구성</div>
+            <div style="font-size:13px; color:var(--text-muted); line-height:1.8;">
+              메뉴마다 <code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;">{프로젝트명}_{메뉴명}.html</code> 파일이 생성됩니다.
+            </div>
+            <div style="font-size:13px; color:var(--text-dim); line-height:1.8; display:flex; flex-direction:column; gap:4px;">
+              <span>📐 와이어프레임 — HTML/CSS로 구현한 실제 UI 레이아웃 (그레이스케일)</span>
+              <span>🔀 상태별 화면 — 기본 / 에러 / 빈 화면을 탭 또는 섹션으로 구분</span>
+              <span>📝 기능 어노테이션 — 번호 레이블 + 설명 테이블</span>
+              <span>📋 정책 메모 — 노션 연결 시 관련 정책 항목 포함</span>
+            </div>
+          </div>
+          <!-- 어노테이션 표시 방식 선택 -->
+          <div style="margin-top:12px;">
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px; letter-spacing:0.3px;">📝 기능 어노테이션 표시 방식</div>
+            <div class="output-types">
+              <label class="output-chip" id="chip-anno-panel">
+                <input type="radio" name="htmlAnnoStyle" value="panel" checked onchange="syncChip(this)" />
+                <span class="dot"></span> 한 곳에 모아서 표시
+              </label>
+              <label class="output-chip" id="chip-anno-tooltip">
+                <input type="radio" name="htmlAnnoStyle" value="tooltip" onchange="syncChip(this)" />
+                <span class="dot"></span> 번호 클릭 시 팝업으로 표시
+              </label>
+            </div>
+            <div id="annoStyleDesc" style="font-size:12px; color:var(--text-dim); margin-top:8px; line-height:1.6; padding:8px 12px; background:var(--surface2); border-radius:var(--radius-sm);">
+              화면 하단에 어노테이션 패널을 고정 배치합니다. 모든 항목을 한눈에 볼 수 있습니다.
+            </div>
+          </div>
+        </div>
+
+        <div id="customToolBox" style="display:none; margin-bottom:10px;">
+          <input type="text" id="customToolName" placeholder="사용할 그리기 도구 또는 MCP 이름 (예: Sketch MCP, Penpot, Zeplin MCP)" />
+          <div style="font-size:12px; color:var(--text-dim); margin-top:6px; line-height:1.5;">
+            입력한 도구 이름으로 Claude가 설치 방법을 직접 검색해 연결한 뒤 기획서를 그립니다.
+          </div>
+        </div>
+        <div id="nxuiInfoBox" style="display:none;"></div>
+
+        <!-- Figma MCP 안내 (Figma 탭 선택 시만 표시) -->
+        <div id="figmaInfoBox">
+          <!-- 상단 공지 -->
+          <div style="background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.3); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px;">
+            <div style="font-size:13px; font-weight:600; color:#f87171; margin-bottom:4px;">⚠ 프롬프트 입력 전 MCP를 먼저 연결해 주세요</div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
+              Claude에 <strong style="color:var(--text)">Figma MCP</strong>가 연결되어 있어야 정상 작동합니다.<br/>
+              아래 방법으로 설치 후 프롬프트를 붙여넣으세요.
+            </div>
+          </div>
+          <!-- 설치 가이드 -->
+          <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:14px;">
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px;">🖼 Figma MCP 설치</div>
+            <div style="font-size:13px; color:var(--text-dim); line-height:1.8;">
+              Claude에서 <code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;color:var(--text-muted);">/mcp</code> 명령어를 입력하고
+              <strong style="color:var(--text-muted)">Figma</strong>를 검색해 설치하세요.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- UI MCP 선택 (그리기 도구와 동일한 depth) -->
+      <div class="form-group" id="uiMcpSection" style="margin-bottom:0; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+        <label>UI MCP 선택 <span style="font-size:11px; font-weight:400; color:var(--text-dim);">선택사항</span></label>
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px; line-height:1.6;">디자인 시스템 컴포넌트를 사용하려면 UI MCP를 선택하세요.</div>
+        <div class="output-types" style="margin-bottom:12px">
+          <label class="output-chip" id="chip-uimcp-nxui">
+            <input type="radio" name="uiMcp" value="nxui" checked onchange="onUiMcpChange()" />
+            <span class="dot"></span> ✦ NXUI MCP <span style="font-size:11px;opacity:0.7;">(넥슨 디자인 시스템)</span>
+          </label>
+          <label class="output-chip" id="chip-uimcp-none">
+            <input type="radio" name="uiMcp" value="none" onchange="onUiMcpChange()" />
+            <span class="dot"></span> 사용 안 함
+          </label>
+          <label class="output-chip" id="chip-uimcp-custom">
+            <input type="radio" name="uiMcp" value="custom" onchange="onUiMcpChange()" />
+            <span class="dot"></span> ✏ 기타
+          </label>
+        </div>
+
+        <!-- NXUI 상세 안내 -->
+        <div id="uiMcpNxuiBox" style="display:none;">
+          <div style="background:rgba(248,113,113,0.07); border:1px solid rgba(248,113,113,0.3); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px;">
+            <div style="font-size:13px; font-weight:600; color:#f87171; margin-bottom:4px;">⚠ 프롬프트 입력 전 NXUI MCP를 먼저 연결해 주세요</div>
+            <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">아래 설치 가이드를 참고해 연결 완료 후 프롬프트를 붙여넣으세요.</div>
+          </div>
+          <!-- 접기/펼치기 가이드 -->
+          <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden;">
+            <button onclick="toggleNxuiGuide(this)" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:13px; font-weight:600;">
+              <span>📋 NXUI MCP 설치 가이드</span>
+              <span id="nxuiGuideArrow" style="font-size:11px; transition:transform 0.2s;">▼</span>
+            </button>
+            <div id="nxuiGuideBody" style="display:none; padding:0 16px 16px; flex-direction:column; gap:16px;">
+              <div>
+                <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">① NXUI MCP 실행</div>
+                <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">생성된 프롬프트에 연결 지시가 자동 포함됩니다. Claude가 아래 명령어로 MCP를 실행합니다.</div>
+                <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;">npx -y @nxui/mcp</pre>
+              </div>
+              <div>
+                <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">② NXUI 패키지 설치 (프로젝트에 미설치 시)</div>
+                <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">프로젝트 루트에 <code style="background:var(--bg);padding:1px 6px;border-radius:4px;font-size:12px;">.npmrc</code> 파일을 만들고 아래 내용을 추가하세요.</div>
+                <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0 0 8px;overflow-x:auto;">@nxui:registry=https://nexus.nexon.com/repository/nxui-npm-release/</pre>
+                <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">// npm
+npm install @nxui/core
+
+// yarn
+yarn add @nxui/core
+
+// pnpm
+pnpm install @nxui/core</pre>
+              </div>
+              <div>
+                <div style="font-size:12px; font-weight:700; color:#a89ef9; letter-spacing:0.5px; margin-bottom:8px;">③ 스타일 설정</div>
+                <div style="font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:8px;">프로젝트의 root CSS 파일에 추가하세요.</div>
+                <pre style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:12px;color:#a0c4ff;margin:0;overflow-x:auto;line-height:1.8;">@layer reset, core, tailwind;
+
+@layer reset {
+  @import '@nxui/core/reset.css';
+}
+
+@layer core {
+  @import '@nxui/core/styles.css';
+}
+
+@layer tailwind {
+  @import 'tailwindcss/theme.css';
+  @import 'tailwindcss/utilities.css';
+}</pre>
+              </div>
+              <div style="border-top:1px solid var(--border); padding-top:14px;">
+                <div style="font-size:12px; color:var(--text-dim); margin-bottom:10px; line-height:1.5;">위 가이드를 Claude에 전달해 설치를 자동으로 진행시킬 수 있어요.</div>
+                <button class="btn-action" id="btnCopyNxuiInstall" onclick="copyNxuiInstallPrompt(this)" style="width:100%; justify-content:center; padding:9px 0; font-size:13px;">
+                  📋 NXUI MCP 설치 지시 프롬프트 복사
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 기타 UI MCP -->
+        <div id="uiMcpCustomBox" style="display:none;">
+          <input type="text" id="uiMcpCustomName" placeholder="사용할 UI MCP 이름 (예: Ant Design MCP, MUI MCP)" />
+          <div style="font-size:12px; color:var(--text-dim); margin-top:6px; line-height:1.5;">입력한 UI MCP 이름으로 Claude가 설치 방법을 검색해 연결한 뒤 컴포넌트를 활용합니다.</div>
+        </div>
+      </div>
+    </div>
+
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(4)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(6)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-5 -->
+
+    <!-- Step 6 -->
+    <div class="step-panel" id="step-panel-6">
+
+    <!-- Figma-only 안내 (Figma MCP 미선택 시 표시) -->
+    <div id="figmaOnlyNotice" style="display:none; align-items:center; gap:10px; background:rgba(250,204,21,0.07); border:1px solid rgba(250,204,21,0.25); border-radius:var(--radius-sm); padding:11px 14px; margin-bottom:12px;">
+      <span style="font-size:16px; flex-shrink:0;">🖼</span>
+      <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+        <strong style="color:var(--warning);">Figma MCP 전용 설정입니다.</strong><br/>
+        5번 출력 설정에서 <strong style="color:var(--text)">Figma MCP</strong>를 선택해야 이 섹션의 필드가 활성화됩니다.
+      </div>
+    </div>
+
+    <!-- Section 6: 피그마 위치 지정 -->
+    <div class="section" id="section6">
+      <div class="section-header">
+        <div class="section-number">6</div>
+        <div class="section-title">피그마 위치 지정</div>
+        <div class="section-desc">선택사항</div>
+      </div>
+      <label class="figma-toggle" for="figmaToggle">
+        <div class="toggle-switch">
+          <input type="checkbox" id="figmaToggle" onchange="toggleFigma()" checked />
+          <div class="toggle-track"></div>
+          <div class="toggle-thumb"></div>
+        </div>
+        <span class="toggle-label">기존 피그마 파일의 특정 위치에 삽입할게요</span>
+      </label>
+      <div class="figma-fields" id="figmaFields">
+        <div class="form-group" style="margin-bottom:14px">
+          <label>피그마 파일 URL</label>
+          <input type="url" id="figmaFileUrl" placeholder="예) https://www.figma.com/file/aBcDeFg.../프로젝트명" />
+          <div class="notion-hint" style="margin-top:6px">
+            피그마에서 파일을 열고, 브라우저 주소창의 URL을 그대로 복사해 붙여넣으세요.
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:14px">
+          <div class="form-group" style="margin-bottom:0">
+            <label>삽입할 페이지명</label>
+            <input type="text" id="figmaPage" placeholder="예) 기획 v2.0, Wireframe" />
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>기준 프레임 이름 <span style="font-size:11px;color:var(--text-dim)">(선택 · 이 프레임 오른쪽에 붙여넣을 때)</span></label>
+            <input type="text" id="figmaAnchorFrame" placeholder="예) 기존 화면 A, Cover" />
+          </div>
+        </div>
+        <div class="figma-coords">
+          <div class="form-group" style="margin-bottom:0">
+            <label>시작 X 좌표</label>
+            <input type="text" id="figmaX" placeholder="예) 0" />
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>시작 Y 좌표</label>
+            <input type="text" id="figmaY" placeholder="예) 0" />
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>프레임 간격 (px)</label>
+            <input type="text" id="figmaGap" placeholder="예) 80" />
+          </div>
+        </div>
+        <div class="tip-box">
+          <strong>💡 좌표 찾는 법</strong> — 피그마 캔버스에서 빈 곳을 클릭하면 오른쪽 패널 상단에 X, Y 좌표가 표시돼요.<br/>
+          새 기획서를 기존 프레임 바로 옆에 붙이고 싶다면, 그 프레임의 오른쪽 끝 X값에 80 정도를 더한 값을 입력하면 됩니다.<br/>
+          <span style="color:var(--text-dim)">비워두면 Claude가 빈 공간을 찾아 자동 배치합니다.</span>
+        </div>
+      </div>
+      <div id="figmaAutoNote" style="font-size:13px; color:var(--text-dim); line-height:1.6;">
+        위치를 따로 지정하지 않으면 Claude가 메뉴 수에 맞게 자동으로 레이아웃을 잡아 새 섹션에 배치합니다.
+        기존 파일에 추가할 때만 위치를 지정해 주세요.
+      </div>
+    </div>
+
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(5)">← 이전</button>
+        <button class="btn-step next" onclick="goToStep(7)">다음 →</button>
+      </div>
+    </div><!-- /step-panel-6 -->
+
+    <!-- Step 7 -->
+    <div class="step-panel" id="step-panel-7">
+    <!-- Section 7: 추가 요청 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">7</div>
+        <div class="section-title">추가 요청사항</div>
+        <div class="section-desc">선택사항</div>
+      </div>
+      <textarea id="extraRequests" placeholder="예) 다크모드 기준으로 작성해줘, 모바일 375px 기준 프레임으로, 컴포넌트는 Auto Layout 사용" style="min-height:80px;margin-bottom:0"></textarea>
+    </div>
+
+      <div class="step-nav">
+        <button class="btn-step" onclick="goToStep(6)">← 이전</button>
+      </div>
+    </div><!-- /step-panel-7 -->
+
+    </div><!-- /wizard-card -->
+
+    <!-- Generate Button -->
+    <div class="generate-below">
+      <button class="btn-generate-fab" onclick="generatePrompt()">
+        <span>✦</span> 프롬프트 생성하기
+      </button>
+    </div>
+
+    <!-- Result -->
+    <div class="result-card" id="resultCard">
+
+      <!-- 탭 버튼 -->
+      <div class="result-tabs">
+        <button class="result-tab" id="tabBtnPrompt" onclick="switchResultTab('prompt', this)">✦ 프롬프트</button>
+      </div>
+
+      <!-- ── 탭: 프롬프트 ── -->
+      <div id="tabPrompt">
+        <div class="result-toolbar">
+          <div class="result-title">생성된 프롬프트</div>
+          <div class="result-actions">
+            <button class="btn-action" onclick="copyPrompt(this)">📋 복사</button>
+            <button class="btn-action" onclick="downloadPrompt()">⬇ 저장</button>
+          </div>
+        </div>
+        <div class="result-body" id="resultBody"></div>
+        <div class="how-to">
+          <div class="how-to-title">🚀 이렇게 사용하세요</div>
+          <div class="how-to-steps">
+            <div class="how-to-step">
+              <div class="step-num">1</div>
+              <span>위 프롬프트를 복사한 뒤 <strong style="color:var(--text)">Claude Cowork 또는 Claude.ai</strong> 채팅창에 붙여넣으세요.</span>
+            </div>
+            <div class="how-to-step">
+              <div class="step-num">2</div>
+              <span id="howToStep2">Claude가 <strong style="color:var(--text)">Notion MCP</strong>로 정책 문서를 읽고, 메뉴별 <strong style="color:var(--text)">HTML 기획서 파일</strong>을 직접 생성합니다. 별도 MCP 연결이 필요 없습니다.</span>
+            </div>
+            <div class="how-to-step">
+              <div class="step-num">3</div>
+              <span>생성된 기획서를 확인하고 추가 수정을 요청하거나 직접 편집하세요.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /result-card -->
+
+    </div><!-- /promptSection -->
+
+  </div>
+
+  <script>
+    // ── Notion page builder ──
+    let notionCount = 0;
+
+    function addNotionPage(label = '', url = '', summary = '') {
+      notionCount++;
+      const list = document.getElementById('notionPageList');
+      const div = document.createElement('div');
+      div.className = 'notion-page-item';
+      div.dataset.nid = notionCount;
+
+      div.innerHTML = `
+        <div class="notion-page-header">
+          <span class="notion-page-badge">문서 ${list.children.length + 1}</span>
+          <input type="text" class="notion-label" placeholder="문서 이름 (예: 결제 정책, 회원 정책)" value="${escHtml(label)}" />
+          <button class="btn-remove" onclick="removeNotionPage(this)" title="삭제">×</button>
+        </div>
+        <div class="notion-url-wrap">
+          <span class="notion-icon">📄</span>
+          <input type="url" class="notion-url-input" placeholder="https://www.notion.so/your-workspace/..." value="${escHtml(url)}" />
+        </div>
+        <textarea class="notion-summary" placeholder="이 문서의 주요 정책 포인트 메모 (선택)&#10;예) 미성년자 결제 제한 포함, 환불 정책 7일 이내">${escHtml(summary)}</textarea>
+      `;
+      list.appendChild(div);
+      reindexNotionPages();
+    }
+
+    function removeNotionPage(btn) {
+      const item = btn.closest('.notion-page-item');
+      const list = item.parentElement;
+      if (list.children.length <= 1) {
+        // 마지막 하나는 삭제 대신 초기화
+        item.querySelectorAll('input').forEach(i => i.value = '');
+        item.querySelector('textarea').value = '';
+        return;
+      }
+      item.remove();
+      reindexNotionPages();
+    }
+
+    function reindexNotionPages() {
+      document.querySelectorAll('.notion-page-badge').forEach((el, i) => {
+        el.textContent = `문서 ${i + 1}`;
+      });
+    }
+
+    // ── Menu builder ──
+    let menuCount = 0;
+
+    function addMenu(name = '', features = ['']) {
+      menuCount++;
+      const mid = menuCount;
+      const list = document.getElementById('menuList');
+      const div = document.createElement('div');
+      div.className = 'menu-item';
+      div.dataset.id = mid;
+
+      const featHtml = features.map((f, i) => featureRowHtml(f)).join('');
+
+      div.innerHTML = `
+        <div class="menu-item-header">
+          <span class="menu-drag">⠿</span>
+          <span class="menu-index">메뉴 ${list.children.length + 1}</span>
+          <input type="text" placeholder="메뉴 이름 입력 (예: 홈, 마이페이지, 결제)" value="${escHtml(name)}" class="menu-name" />
+          <button class="btn-remove" onclick="removeMenu(this)" title="메뉴 삭제">×</button>
+        </div>
+        <label style="margin-bottom:8px">기능 목록</label>
+        <div class="feature-list" id="featList-${mid}">${featHtml}</div>
+        <button class="btn-add-feat" onclick="addFeature(${mid})">＋ 기능 추가</button>
+        <div class="submenu-section">
+          <div class="submenu-section-label">↳ 2depth 서브메뉴 (선택)</div>
+          <div class="submenu-list" id="subList-${mid}"></div>
+          <button class="btn-add-submenu" onclick="addSubmenu(${mid})">＋ 서브메뉴 추가</button>
+        </div>
+      `;
+      list.appendChild(div);
+      reindexMenus();
+    }
+
+    function featureRowHtml(value = '') {
+      return `
+        <div class="feature-row">
+          <div class="feat-desc-wrap">
+            <div class="feat-name-row">
+              <input type="text" placeholder="예) 상품 목록 조회, 장바구니 담기, 결제 완료 팝업" value="${escHtml(value)}" />
+              <button class="btn-toggle-desc" onclick="toggleFeatDesc(this)" title="상세 설명 추가">메모 +</button>
+            </div>
+            <textarea class="feat-desc" placeholder="기능 상세 설명, 예외 케이스, 정책 메모 등 (선택)"></textarea>
+          </div>
+          <button class="btn-remove-feat" onclick="removeFeature(this)" title="삭제">×</button>
+        </div>
+      `;
+    }
+
+    function addFeature(menuId) {
+      const list = document.getElementById(`featList-${menuId}`);
+      const tmp = document.createElement('div');
+      tmp.innerHTML = featureRowHtml();
+      const row = tmp.firstElementChild;
+      list.appendChild(row);
+      row.querySelector('input[type="text"]').focus();
+    }
+
+    function toggleFeatDesc(btn) {
+      const desc = btn.closest('.feat-desc-wrap').querySelector('.feat-desc');
+      const visible = desc.classList.toggle('visible');
+      btn.textContent = visible ? '메모 −' : '메모 +';
+      btn.classList.toggle('active', visible);
+      if (visible) desc.focus();
+    }
+
+    function removeFeature(btn) {
+      const row = btn.closest('.feature-row');
+      const list = row.parentElement;
+      if (list.children.length <= 1) return;
+      row.remove();
+    }
+
+    // ── Sub-menu builder ──
+    let subCount = 0;
+
+    function addSubmenu(menuId) {
+      subCount++;
+      const list = document.getElementById(`subList-${menuId}`);
+      const sid = subCount;
+      const div = document.createElement('div');
+      div.className = 'submenu-item';
+      div.dataset.sid = sid;
+      div.innerHTML = `
+        <div class="submenu-item-header">
+          <span class="submenu-index">서브 ${list.children.length + 1}</span>
+          <input type="text" placeholder="서브메뉴 이름 (예: 이벤트 목록, 설정 > 알림)" class="submenu-name" style="flex:1" />
+          <button class="btn-remove" onclick="removeSubmenu(this, ${menuId})" title="서브메뉴 삭제">×</button>
+        </div>
+        <label style="margin-bottom:8px">기능 목록</label>
+        <div class="feature-list" id="subFeatList-${sid}">${featureRowHtml()}</div>
+        <button class="btn-add-feat" onclick="addSubFeature(${sid})">＋ 기능 추가</button>
+      `;
+      list.appendChild(div);
+    }
+
+    function addSubFeature(sid) {
+      const list = document.getElementById(`subFeatList-${sid}`);
+      const tmp = document.createElement('div');
+      tmp.innerHTML = featureRowHtml();
+      const row = tmp.firstElementChild;
+      list.appendChild(row);
+      row.querySelector('input[type="text"]').focus();
+    }
+
+    function removeSubmenu(btn, menuId) {
+      btn.closest('.submenu-item').remove();
+      reindexSubmenus(menuId);
+    }
+
+    function reindexSubmenus(menuId) {
+      document.querySelectorAll(`#subList-${menuId} .submenu-index`).forEach((el, i) => {
+        el.textContent = `서브 ${i + 1}`;
+      });
+    }
+
+    function removeMenu(btn) {
+      btn.closest('.menu-item').remove();
+      reindexMenus();
+    }
+
+    function reindexMenus() {
+      document.querySelectorAll('.menu-index').forEach((el, i) => {
+        el.textContent = `메뉴 ${i + 1}`;
+      });
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── Notion toggle ──
+    function toggleNotion() {
+      const on = document.getElementById('notionToggle').checked;
+      document.getElementById('notionBody').style.display = on ? 'block' : 'none';
+      document.getElementById('notionToggleLabel').textContent = on ? '사용 중' : '사용 안 함';
+      if (on && document.getElementById('notionPageList').children.length === 0) {
+        addNotionPage();
+      }
+    }
+
+    // ── Figma toggle ──
+    function toggleFigma() {
+      const checked = document.getElementById('figmaToggle').checked;
+      document.getElementById('figmaFields').classList.toggle('active', checked);
+      document.getElementById('figmaAutoNote').style.display = checked ? 'none' : 'block';
+    }
+
+    // ── Chip sync (visual only) ──
+    function syncChip(input) {
+      // chips auto-update via :has() CSS, no JS needed for that
+    }
+
+    // ── NXUI 설치 프롬프트 복사 ──
+    function copyNxuiInstallPrompt(btn) {
+      const prompt = `# NXUI MCP 설치 요청
+
+아래 절차에 따라 NXUI MCP를 설치하고 연결해 주세요.
+
+## ① .npmrc 설정
+프로젝트 루트에 \`.npmrc\` 파일을 생성하고 아래 내용을 추가하세요.
+
+\`\`\`
+@nxui:registry=https://nexus.nexon.com/repository/nxui-npm-release/
+\`\`\`
+
+## ② 패키지 설치
+패키지 매니저에 맞게 아래 중 하나를 실행하세요.
+
+\`\`\`bash
+# npm
+npm install @nxui/core
+
+# yarn
+yarn add @nxui/core
+
+# pnpm
+pnpm install @nxui/core
+\`\`\`
+
+## ③ 스타일 설정
+프로젝트의 root CSS 파일(\`global.css\` 또는 \`App.css\`)에 아래 내용을 추가하세요.
+
+\`\`\`css
+@layer reset, core, tailwind;
+
+@layer reset {
+  @import '@nxui/core/reset.css';
+}
+
+@layer core {
+  @import '@nxui/core/styles.css';
+}
+
+@layer tailwind {
+  @import 'tailwindcss/theme.css';
+  @import 'tailwindcss/utilities.css';
+}
+\`\`\`
+
+## ④ NXUI MCP 실행
+아래 명령어로 NXUI MCP를 실행하세요.
+
+\`\`\`
+npx -y @nxui/mcp
+\`\`\`
+
+설치와 연결이 완료되면 알려주세요.`;
+
+      navigator.clipboard.writeText(prompt).then(() => {
+        btn.classList.add('copied');
+        btn.textContent = '✅ 복사됨';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.textContent = '📋 NXUI MCP 설치 지시 프롬프트 복사';
+        }, 2000);
+      });
+    }
+
+    // ── Draw tool toggle ──
+    function onDrawToolChange() {
+      const val = document.querySelector('input[name="drawTool"]:checked').value;
+      document.getElementById('figmaInfoBox').style.display  = val === 'figma'  ? 'block' : 'none';
+      document.getElementById('htmlInfoBox').style.display   = val === 'html'   ? 'block' : 'none';
+      document.getElementById('customToolBox').style.display = val === 'custom' ? 'block' : 'none';
+      if (val === 'custom') document.getElementById('customToolName').focus();
+
+      // UI MCP 섹션: HTML·Figma에서 표시, 기타에서 숨김 및 초기화
+      const uiMcpSection = document.getElementById('uiMcpSection');
+      if (val === 'custom') {
+        uiMcpSection.style.display = 'none';
+        const noneRadio = document.querySelector('input[name="uiMcp"][value="none"]');
+        if (noneRadio) { noneRadio.checked = true; onUiMcpChange(); }
+      } else {
+        uiMcpSection.style.display = 'block';
+      }
+
+      // Section 6: Figma MCP 아닌 경우 필드만 disabled, 탭은 항상 접근 가능
+      const section5 = document.getElementById('section6');
+      const figmaToggle = document.getElementById('figmaToggle');
+      const figmaOnlyNotice = document.getElementById('figmaOnlyNotice');
+      if (val === 'figma') {
+        section5.classList.remove('section-disabled');
+        if (figmaOnlyNotice) figmaOnlyNotice.style.display = 'none';
+        if (!figmaToggle.checked) { figmaToggle.checked = true; toggleFigma(); }
+      } else {
+        section5.classList.add('section-disabled');
+        if (figmaOnlyNotice) figmaOnlyNotice.style.display = 'flex';
+        if (figmaToggle.checked) { figmaToggle.checked = false; toggleFigma(); }
+      }
+    }
+
+    // ── Step Wizard ──
+    let currentStep = 1;
+    const TOTAL_STEPS = 7;
+
+    function goToStep(n) {
+      if (n < 1 || n > TOTAL_STEPS) return;
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+      const panel = document.getElementById('step-panel-' + n);
+      const tab   = document.getElementById('steptab-' + n);
+      if (panel) panel.classList.add('active');
+      if (tab)   tab.classList.add('active');
+      currentStep = n;
+      tab?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // LNB sync
+      setLnbActive('setup');
+    }
+
+    function positionLnb() {
+      const lnb = document.getElementById('lnb');
+      if (!lnb) return;
+      // 현재 보이는 섹션의 첫 번째 자식 요소 기준으로 정렬
+      const setupSection = document.getElementById('setupSection');
+      const promptSection = document.getElementById('promptSection');
+      const editSection = document.getElementById('editSection');
+      const mergeSection = document.getElementById('mergeSection');
+      const activeSection = [setupSection, promptSection, editSection, mergeSection].find(s => s.style.display !== 'none') || setupSection;
+      const rect = activeSection.getBoundingClientRect();
+      lnb.style.top = rect.top + 'px';
+    }
+
+    window.addEventListener('load', positionLnb);
+    window.addEventListener('resize', positionLnb);
+    window.addEventListener('scroll', positionLnb);
+
+    function lnbSwitch(tab) {
+      const setupSection = document.getElementById('setupSection');
+      const promptSection = document.getElementById('promptSection');
+      const editSection = document.getElementById('editSection');
+      const mergeSection = document.getElementById('mergeSection');
+      const allSections = [setupSection, promptSection, editSection, mergeSection];
+      allSections.forEach(s => s.style.display = 'none');
+
+      if (tab === 'setup') {
+        setupSection.style.display = 'block';
+      } else if (tab === 'prompt') {
+        promptSection.style.display = 'block';
+      } else if (tab === 'edit') {
+        editSection.style.display = 'block';
+      } else if (tab === 'merge') {
+        mergeSection.style.display = 'block';
+      }
+
+      setLnbActive(tab);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(positionLnb, 50);
+    }
+
+    function setLnbActive(tab) {
+      document.getElementById('lnb-setup').classList.toggle('active', tab === 'setup');
+      document.getElementById('lnb-prompt').classList.toggle('active', tab === 'prompt');
+      document.getElementById('lnb-edit').classList.toggle('active', tab === 'edit');
+      document.getElementById('lnb-merge').classList.toggle('active', tab === 'merge');
+    }
+
+    // ── MCP 가이드 접기/펼치기 (공용) ──
+    function toggleMcpGuide(key, btn) {
+      const body  = document.getElementById('mcpGuide' + key.charAt(0).toUpperCase() + key.slice(1));
+      const arrow = btn.querySelector('span:last-child');
+      if (!body) return;
+      const isOpen = body.style.display === 'flex';
+      body.style.display = isOpen ? 'none' : 'flex';
+      arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+    }
+
+    // ── NXUI 가이드 접기/펼치기 ──
+    function toggleNxuiGuide(btn) {
+      const body  = document.getElementById('nxuiGuideBody');
+      const arrow = document.getElementById('nxuiGuideArrow');
+      const isOpen = body.style.display === 'flex';
+      body.style.display = isOpen ? 'none' : 'flex';
+      arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+    }
+
+    // ── UI MCP 선택 ──
+    function onUiMcpChange() {
+      const val = document.querySelector('input[name="uiMcp"]:checked')?.value || 'none';
+      document.getElementById('uiMcpNxuiBox').style.display   = val === 'nxui'   ? 'block' : 'none';
+      document.getElementById('uiMcpCustomBox').style.display = val === 'custom' ? 'block' : 'none';
+      if (val === 'custom') document.getElementById('uiMcpCustomName').focus();
+    }
+
+    // ── HTML 어노테이션 방식 설명 토글 ──
+    document.addEventListener('change', e => {
+      if (e.target.name === 'htmlAnnoStyle') {
+        const desc = document.getElementById('annoStyleDesc');
+        if (!desc) return;
+        desc.textContent = e.target.value === 'tooltip'
+          ? '와이어프레임의 번호 뱃지를 클릭하면 해당 요소 설명이 팝업(툴팁)으로 나타납니다. 화면을 더 넓게 볼 수 있습니다.'
+          : '화면 하단에 어노테이션 패널을 고정 배치합니다. 모든 항목을 한눈에 볼 수 있습니다.';
+      }
+    });
+
+    // ── Result tab switching ──
+    function switchResultTab(tab, btn) {
+      document.getElementById('tabPrompt').style.display = tab === 'prompt' ? 'block' : 'none';
+      document.getElementById('tabSetup').style.display  = tab === 'setup'  ? 'block' : 'none';
+      document.querySelectorAll('.result-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    // ── MD file contents ──
+    const MD_FILES = {
+      writing_rule: {
+        filename: 'writing_rule.md',
+        title: 'writing_rule.md — 기획서 작성 규칙',
+        content: `# 기획서 작성 규칙 (Writing Rules)
+
+## 1. 용어 통일
+
+### UI 요소 기준 용어
+| 기준 용어 | 사용 금지 표현 |
+|---|---|
+| 버튼 | btn, 클릭 요소 |
+| 입력창 | 입력 필드, input |
+| 팝업 | 모달, 다이얼로그, 레이어 팝업 |
+| 토스트 | 알림, 스낵바, 토스트 메시지 |
+| 탭 | 탭메뉴, 카테고리 탭 |
+| 드롭다운 | 셀렉트박스, 선택창 |
+| 토글 | 스위치, ON/OFF 버튼 |
+| 체크박스 | 체크, 선택박스 |
+| 라디오 버튼 | 단일선택, 옵션버튼 |
+| 배너 | 이미지 배너, 슬라이드 배너 |
+| 바텀시트 | 하단 팝업, 슬라이드업 패널 |
+
+### 화면 상태 기준 용어
+| 상태 | 기준 표현 |
+|---|---|
+| 초기/정상 | 기본 |
+| 데이터 없음 | Empty / 빈 화면 |
+| 통신 오류 | 에러 / 오류 화면 |
+| 처리 중 | 로딩 |
+| 입력값 오류 | 유효성 오류 |
+| 권한 없음 | 접근 제한 |
+
+### 액션 기준 동사
+- PC 환경: 클릭하다
+- 모바일 환경: 탭하다
+- 값을 넣는 행위: 입력하다
+- 항목을 고르는 행위: 선택하다
+- 화면 전환: 이동하다 / 진입하다
+- 팝업 닫기: 닫다 / 닫힌다
+
+---
+
+## 2. 문체 규칙
+
+### 기본 원칙
+- 서술형으로 작성: "~한다", "~된다", "~할 수 있다"
+- 개조식 금지: ❌ "클릭 시 이동" → ✅ "클릭 시 해당 화면으로 이동한다"
+- 수동태 지양: ❌ "처리됩니다" → ✅ "처리된다"
+- 주어 생략 최소화: 사용자, 시스템, 버튼, 화면 등 주어를 명시한다
+
+### 기능 설명 패턴
+사용자 행동과 시스템 반응을 함께 작성한다.
+- 예: "사용자가 [버튼]을 클릭하면 [결과]가 발생한다"
+- 예: "[조건] 상태일 때, [요소]는 [상태]로 표시된다"
+- 예: "[A] 또는 [B] 조건에서 [버튼]은 비활성(disabled) 상태가 된다"
+
+### 어노테이션 문체
+- 1~2문장 이내로 간결하게 작성
+- 예외 케이스는 "단, ~" 또는 "예외: ~"로 명시
+- 참조 문서는 "(→ [문서명] 참조)"로 표기
+
+---
+
+## 3. 화면 명칭 규칙
+
+### 화면 이름 패턴
+[메뉴명] / [서브메뉴명] — [상태]
+- 예: "상품 목록 — 기본"
+- 예: "상품 목록 — Empty"
+- 예: "결제 수단 선택 — 에러"
+- 예: "마이페이지 / 주문 내역 — 기본"
+
+### 팝업 명칭 패턴
+[기능명] 팝업 — [상태]
+- 예: "쿠폰 적용 팝업 — 기본"
+- 예: "탈퇴 확인 팝업"
+
+---
+
+## 4. 숫자·단위 표기
+- 수량: 아라비아 숫자 (1, 2, 3)
+- 퍼센트: % 기호 (10%)
+- 금액: 서비스 정책에 따르되 통일 (예: 1,000원)
+- 시간: 서비스 정책에 따르되 통일 (예: 14:00 또는 오후 2시)
+- 글자 수 제한: "최대 OO자" 형식으로 통일
+
+---
+
+## 5. 참조·링크 표기
+- 정책 문서 참조: "(→ [문서명] 참조)"
+- 타 화면 참조: "(→ [화면명] 참고)"
+- 연관 기능 참조: "(→ OO 기능과 동일)"
+`
+      },
+      instruction: {
+        filename: 'instruction.md',
+        title: 'instruction.md — 기획서 구조 가이드',
+        content: `# 기획서 구조 가이드 (Instruction)
+
+## 기획서 기본 구성
+
+기획서는 다음 순서의 독립 프레임으로 구성한다.
+
+1. **화면 프레임** (필수) — 각 메뉴 × 상태별 UI 레이아웃
+2. **어노테이션 프레임** (필수) — 기능 설명 모음 (화면 프레임과 분리)
+
+---
+
+## 화면 프레임 구조
+
+### 프레임 명칭 규칙
+\`\`\`
+[메뉴명] / [서브메뉴명] — [상태]
+예) 상품 목록 — 기본
+    상품 목록 — Empty
+    결제 수단 선택 — 에러
+    마이페이지 / 주문 내역 — 기본
+\`\`\`
+
+### 화면 프레임에 포함할 요소
+
+**필수 요소**
+- 화면 UI 레이아웃 전체
+- 헤더/내비게이션 영역
+- 주요 기능 영역
+- 어노테이션 번호 배지 (기능이 있는 요소마다)
+
+**상태별 추가 요소**
+| 상태 | 추가 요소 |
+|---|---|
+| 기본 | 실제 데이터가 채워진 상태의 UI |
+| Empty | 빈 상태 안내 메시지 + CTA 버튼 |
+| 에러 | 에러 메시지 영역 + 재시도 액션 |
+| 로딩 | 스켈레톤 UI 또는 스피너 |
+| 팝업 | 딤드 배경 + 팝업 레이어 |
+
+### 어노테이션 번호 배지 규칙
+- 각 기능 요소 우측 상단에 원형 배지로 표기
+- 번호는 화면 내에서 좌→우, 상→하 순서로 부여
+- 팝업이 존재하는 경우, 팝업 내 기능에도 별도 번호 부여
+- 팝업 어노테이션은 팝업이 열린 상태에서만 표시
+
+---
+
+## 어노테이션 프레임 구조
+
+### 원칙
+- 화면 프레임과 분리된 독립 최상위 프레임으로 생성
+- 화면명 기준으로 섹션 구분
+- 번호는 해당 화면의 배지 번호와 반드시 일치
+
+### 어노테이션 항목 작성 형식
+\`\`\`
+[번호] [기능명]
+동작: [사용자 행동] → [시스템 반응]
+조건: [표시 조건 또는 비활성화 조건]
+예외: [에러 케이스 또는 엣지 케이스]
+참조: [관련 정책 문서 또는 화면]
+\`\`\`
+
+---
+
+## 섹션별 작성 가이드
+
+### 헤더 / 내비게이션
+- 타이틀 텍스트 및 Back 버튼 유무 명시
+- 우측 액션 버튼이 있을 경우 기능 명시
+- 탭이나 필터가 있는 경우 각 항목 기능과 기본 선택값 명시
+
+### 리스트 / 그리드 영역
+- 아이템 구성 요소 명시 (썸네일, 텍스트, 배지 등)
+- 정렬·필터 기준 명시
+- 페이지네이션 또는 무한스크롤 방식 명시
+- 최대 표시 개수 및 말줄임 처리 기준 명시
+
+### 폼 / 입력 영역
+- 필드별 입력 타입, 최대/최소 글자수 명시
+- 필수/선택 여부 명시 (필수 필드는 * 표기 여부 포함)
+- 유효성 검사 조건 및 에러 메시지 전문 명시
+- 초기값 및 플레이스홀더 텍스트 명시
+
+### 버튼 / CTA 영역
+- 버튼 레이블 텍스트 (정확한 문구)
+- 활성/비활성 조건
+- 클릭 시 동작 (화면 이동, API 호출, 팝업 노출 등)
+- 처리 중(로딩) 상태 표시 방법
+
+### 팝업 / 다이얼로그
+- 팝업 진입 조건 (어떤 액션에서 열리는가)
+- 팝업 내 구성 요소 전체
+- 닫기 방법 (X 버튼, 배경 클릭, ESC, 버튼 등)
+- 팝업 내 각 버튼의 동작 결과
+
+---
+
+## 에러·엣지 케이스 문서화 기준
+
+### 반드시 포함해야 할 에러 케이스
+1. 네트워크 오류 / 서버 응답 실패
+2. 권한 없음 / 비로그인 상태 접근
+3. 데이터 없음 (Empty State)
+4. 입력값 유효성 오류
+5. 시스템 점검 / 서비스 불가 상태
+
+### 에러 케이스 작성 형식
+\`\`\`
+에러 유형: [에러명]
+발생 조건: [언제 발생하는가]
+표시 방법: [토스트 / 팝업 / 인라인 메시지]
+메시지: "[실제 표시될 메시지 텍스트]"
+액션: [재시도 버튼 / 확인 버튼 / 없음]
+\`\`\`
+
+---
+
+## 버전 관리 규칙
+
+### 버전 표기
+- Major (X.0): 기능 구조가 크게 변경될 때
+- Minor (1.X): 화면 추가·삭제 시
+- Patch (1.0.X): 텍스트·디자인 수정 시
+
+### 변경 이력 기록 항목
+변경 날짜 / 버전 / 변경 내용 요약 / 작성자
+`
+      }
+    };
+
+    // ── MD 미리보기 ──
+    function previewMd(key) {
+      const file = MD_FILES[key];
+      if (!file) return;
+      const area = document.getElementById('mdPreviewArea');
+      document.getElementById('mdPreviewTitle').textContent = file.title;
+      document.getElementById('mdPreviewBody').textContent = file.content;
+      area.style.display = 'block';
+      area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // ── MD 다운로드 ──
+    function downloadMdFile(key) {
+      const file = MD_FILES[key];
+      if (!file) return;
+      const blob = new Blob([file.content], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ── Prompt generation ──
+    function generatePrompt() {
+      const name = document.getElementById('projectName').value.trim();
+      const concept = document.getElementById('projectConcept').value.trim();
+      const serviceType = document.getElementById('serviceType').value.trim();
+      const targetUser = document.getElementById('targetUser').value.trim();
+      const extraRequests = document.getElementById('extraRequests').value.trim();
+
+      // Notion 정책 동기화 URL
+      const notionSyncUrl = (document.getElementById('notionToggle').checked
+        ? document.getElementById('notionSyncUrl')?.value.trim()
+        : '') || '';
+
+      // Collect Notion pages (only if toggle is on)
+      const notionPages = [];
+      if (document.getElementById('notionToggle').checked) {
+        document.querySelectorAll('.notion-page-item').forEach(item => {
+          const url = item.querySelector('.notion-url-input').value.trim();
+          if (!url) return;
+          const label = item.querySelector('.notion-label').value.trim();
+          const summary = item.querySelector('.notion-summary').value.trim();
+          notionPages.push({ url, label, summary });
+        });
+      }
+
+      if (!name) { alert('프로젝트 이름을 입력해 주세요.'); document.getElementById('projectName').focus(); return; }
+      if (!concept) { alert('프로젝트 컨셉을 입력해 주세요.'); document.getElementById('projectConcept').focus(); return; }
+
+      // Collect menus
+      const menus = [];
+      document.querySelectorAll('.menu-item').forEach(item => {
+        const menuName = item.querySelector('.menu-name').value.trim();
+        if (!menuName) return;
+        const features = [];
+        item.querySelectorAll(':scope .feature-list > .feature-row').forEach(row => {
+          // only direct featList rows (not submenu rows)
+          if (row.closest('.submenu-item')) return;
+          const f = row.querySelector('input[type="text"]').value.trim();
+          const desc = row.querySelector('.feat-desc')?.value.trim() || '';
+          if (f) features.push({ name: f, desc });
+        });
+        const submenus = [];
+        item.querySelectorAll('.submenu-item').forEach(sub => {
+          const subName = sub.querySelector('.submenu-name').value.trim();
+          if (!subName) return;
+          const subFeats = [];
+          sub.querySelectorAll('.feature-row').forEach(row => {
+            const f = row.querySelector('input[type="text"]').value.trim();
+            const desc = row.querySelector('.feat-desc')?.value.trim() || '';
+            if (f) subFeats.push({ name: f, desc });
+          });
+          submenus.push({ name: subName, features: subFeats });
+        });
+        menus.push({ name: menuName, features, submenus });
+      });
+
+      if (menus.length === 0) { alert('최소 한 개 이상의 메뉴를 입력해 주세요.'); return; }
+
+      // Collect outputs
+      const outputs = [];
+      document.querySelectorAll('input[name="output"]').forEach(inp => { if (inp.checked) outputs.push(inp.value); });
+      const detailLabel = '표준 — 엣지 케이스·에러 상태·빈 화면 등 모든 분기 처리 포함';
+      const outputLabel = {
+        wireframe: '와이어프레임 (화면 레이아웃)',
+        flow: '유저 플로우 다이어그램',
+        annotation: '기능 어노테이션 (번호 + 설명 텍스트)',
+        component: '사용 컴포넌트 목록',
+        policy: '정책 연결 메모 (노션 근거 포함)'
+      };
+
+      // Draw tool
+      const drawToolEl = document.querySelector('input[name="drawTool"]:checked');
+      const drawTool = drawToolEl ? drawToolEl.value : 'figma';
+      const uiMcpVal = document.querySelector('input[name="uiMcp"]:checked')?.value || 'none';
+      const isNxui   = (drawTool === 'figma' || drawTool === 'html') && uiMcpVal === 'nxui';
+      const uiMcpCustomName = document.getElementById('uiMcpCustomName')?.value.trim() || '';
+      const isUiMcpCustom = (drawTool === 'figma' || drawTool === 'html') && uiMcpVal === 'custom' && uiMcpCustomName;
+      const isHtml   = drawTool === 'html';
+      const htmlAnnoStyle = document.querySelector('input[name="htmlAnnoStyle"]:checked')?.value || 'panel';
+      const isCustom = drawTool === 'custom';
+      const customToolName = document.getElementById('customToolName').value.trim() || '지정 도구';
+
+      // Figma position
+      const figmaEnabled = document.getElementById('figmaToggle').checked;
+      const figmaFileUrl = document.getElementById('figmaFileUrl').value.trim();
+      const figmaFileKey = figmaFileUrl.match(/\/(?:file|design)\/([^/?]+)/)?.[1] || figmaFileUrl;
+      const figmaPage = document.getElementById('figmaPage').value.trim();
+      const figmaAnchorFrame = document.getElementById('figmaAnchorFrame').value.trim();
+      const figmaX = document.getElementById('figmaX').value.trim();
+      const figmaY = document.getElementById('figmaY').value.trim();
+      const figmaGap = document.getElementById('figmaGap').value.trim();
+
+      // ── Build prompt ──
+      let prompt = '';
+      prompt += `# 피그마 상세 기획서 작성 요청\n\n`;
+
+      if (isNxui) {
+        prompt += `## 🔧 사용 MCP 도구: NXUI MCP (넥슨 사내 디자인 시스템)\n\n`;
+        prompt += `이 기획서는 **NXUI MCP**를 사용해 넥슨 디자인 시스템 컴포넌트 기반으로 작성합니다.\n\n`;
+        prompt += `### NXUI MCP 연결 확인\n`;
+        prompt += `작업 시작 전 NXUI MCP가 연결되어 있는지 확인해 주세요.\n`;
+        prompt += `연결되어 있지 않다면 아래 명령어로 MCP를 실행해 주세요:\n\n`;
+        prompt += `\`\`\`\nnpx -y @nxui/mcp\n\`\`\`\n\n`;
+        prompt += `> NXUI MCP가 정상 연결되면 넥슨 디자인 시스템의 컴포넌트(버튼, 인풋, 카드, 모달 등)를\n`;
+        prompt += `> 직접 불러와 기획서 프레임에 배치할 수 있습니다.\n`;
+        prompt += `> Figma MCP와 NXUI MCP를 **함께** 사용해 주세요.\n\n`;
+        prompt += `---\n\n`;
+      } else if (isHtml) {
+        prompt += `## 🌐 출력 형식: HTML 기획서 파일\n\n`;
+        prompt += `피그마 대신 **브라우저에서 바로 열 수 있는 HTML 파일**로 와이어프레임과 상세 디스크립션을 작성합니다.\n\n`;
+        prompt += `### 파일 생성 규칙\n`;
+        prompt += `- 파일 이름 형식: \`${name}_{메뉴명}.html\` (예: \`${name}_홈.html\`)\n`;
+        prompt += `- 각 메뉴마다 독립적인 단일 HTML 파일로 생성\n`;
+        prompt += `- 외부 라이브러리 없이 순수 HTML + CSS + 인라인 JS만 사용\n\n`;
+        prompt += `### 각 HTML 파일 구성\n`;
+        prompt += `1. **페이지 헤더** — 프로젝트명, 메뉴명, 작성일 표시\n`;
+        prompt += `2. **와이어프레임** — 그레이스케일 팔레트로 실제 UI 레이아웃 구현\n`;
+        prompt += `   - 상태별 탭 전환: 기본 / 에러 / 빈 화면\n`;
+        prompt += `3. **기능 어노테이션** — UI 요소에 번호 레이블 + 하단 설명 테이블\n`;
+        if (notionPages.length > 0) {
+          prompt += `4. **정책 메모** — 노션 문서에서 이 화면에 적용되는 정책 항목\n`;
+        }
+        prompt += `\n---\n\n`;
+      } else if (isCustom) {
+        prompt += `## 🔧 사용 그리기 도구: ${customToolName}\n\n`;
+        prompt += `이 기획서는 **${customToolName}**을(를) 사용해 작성합니다.\n\n`;
+        prompt += `### ${customToolName} 설치 및 연결\n`;
+        prompt += `**${customToolName}**의 MCP 또는 플러그인이 아직 연결되어 있지 않다면 아래 순서로 진행해 주세요:\n\n`;
+        prompt += `1. 웹 검색으로 **"${customToolName} MCP 설치 방법"** 또는 **"${customToolName} Figma plugin"** 을 찾아 주세요.\n`;
+        prompt += `2. 공식 문서나 GitHub README에 따라 설치·연결을 완료해 주세요.\n`;
+        prompt += `3. 연결 확인 후 해당 도구에서 사용 가능한 기능·컴포넌트 목록을 파악해 주세요.\n`;
+        prompt += `4. 파악한 기능을 활용해 아래 기획서를 작성해 주세요.\n\n`;
+        prompt += `---\n\n`;
+      }
+
+      prompt += `## 📌 프로젝트 개요\n\n`;
+      prompt += `- **프로젝트명**: ${name}\n`;
+      if (serviceType) prompt += `- **서비스 유형**: ${serviceType}\n`;
+      if (targetUser) prompt += `- **타겟 사용자**: ${targetUser}\n`;
+      prompt += `- **컨셉 및 방향성**:\n  ${concept.replace(/\n/g, '\n  ')}\n\n`;
+
+      prompt += `## 📂 메뉴 구조 및 기능 정의\n\n`;
+      menus.forEach((menu, i) => {
+        prompt += `### ${i + 1}. ${menu.name}\n`;
+        if (menu.features.length > 0) {
+          menu.features.forEach(f => {
+            prompt += `  - ${f.name}\n`;
+            if (f.desc) prompt += `    > ${f.desc}\n`;
+          });
+        } else {
+          prompt += `  - (기능 미정)\n`;
+        }
+        if (menu.submenus && menu.submenus.length > 0) {
+          menu.submenus.forEach(sub => {
+            prompt += `  - **[서브메뉴] ${sub.name}**\n`;
+            if (sub.features.length > 0) {
+              sub.features.forEach(f => {
+                prompt += `    - ${f.name}\n`;
+                if (f.desc) prompt += `      > ${f.desc}\n`;
+              });
+            } else {
+              prompt += `    - (기능 미정)\n`;
+            }
+          });
+        }
+        prompt += '\n';
+      });
+
+      if (notionPages.length > 0) {
+        prompt += `## 📋 노션 정책 문서 (총 ${notionPages.length}개)\n\n`;
+        prompt += `아래 노션 페이지들에 서비스 정책이 정의되어 있습니다.\n`;
+        prompt += `**반드시 Notion MCP를 사용하여 모든 문서를 순서대로 읽고**, 정책 내용을 기획서에 반영해 주세요.\n\n`;
+        notionPages.forEach((page, i) => {
+          const docName = page.label || `정책 문서 ${i + 1}`;
+          prompt += `### ${i + 1}. ${docName}\n`;
+          prompt += `- **URL**: ${page.url}\n`;
+          if (page.summary) {
+            prompt += `- **메모** (참고용, 노션 원문 우선):\n`;
+            page.summary.split('\n').forEach(line => { if (line.trim()) prompt += `  > ${line}\n`; });
+          }
+          prompt += '\n';
+        });
+      } else {
+        prompt += `## 📋 정책 문서\n\n`;
+        prompt += `별도 정책 문서가 제공되지 않았습니다. 각 기능의 메모와 일반적인 UX 관행을 기반으로 기획서를 작성해 주세요.\n\n`;
+      }
+
+      if (notionSyncUrl) {
+        prompt += `## 🔄 메뉴별 정책 동기화\n\n`;
+        prompt += `**동기화 대상 노션 페이지**: ${notionSyncUrl}\n\n`;
+        prompt += `각 메뉴 기획서 작성 완료 후, 아래 형식으로 해당 페이지에 정책 레코드를 **Notion MCP로 즉시 기록**해 주세요.\n`;
+        prompt += `다음 메뉴 작업 시작 전에는 이 페이지를 읽어 기존 정책과의 일관성을 반드시 확인하세요.\n\n`;
+        prompt += `**정책 레코드 형식** (메뉴마다 이 구조로 페이지에 추가):\n`;
+        prompt += `\`\`\`\n`;
+        prompt += `## [메뉴명] — 작성일시\n`;
+        prompt += `### 주요 기능 목록\n`;
+        prompt += `- [기능명]: [동작 정의 — 사용자 행동 → 시스템 반응]\n`;
+        prompt += `### 비활성/제한 조건\n`;
+        prompt += `- [조건 설명]\n`;
+        prompt += `### 에러 처리\n`;
+        prompt += `- [에러 유형]: [표시 방법 + 메시지]\n`;
+        prompt += `### 타 메뉴 참조 관계\n`;
+        prompt += `- [참조 내용 또는 "없음"]\n`;
+        prompt += `### 사용된 어노테이션 번호\n`;
+        prompt += `- [X]번 ~ [Y]번\n`;
+        prompt += `\`\`\`\n\n`;
+      }
+
+      const toolLabel = isNxui ? 'NXUI MCP + Figma MCP 사용' : isUiMcpCustom ? `${uiMcpCustomName} + Figma MCP 사용` : isHtml ? 'HTML 파일 생성' : isCustom ? `${customToolName} 사용` : 'Figma MCP 사용';
+      const sectionTitle = isHtml ? '🌐 HTML 기획서 작성 지시' : '🎨 피그마 기획서 작성 지시';
+      prompt += `## ${sectionTitle} (${toolLabel})\n\n`;
+
+      if (!isHtml && figmaEnabled && (figmaFileUrl || figmaPage)) {
+        prompt += `**대상 피그마 파일**:\n`;
+        if (figmaFileUrl) prompt += `- 파일 URL: ${figmaFileUrl}\n`;
+        if (figmaFileKey && figmaFileKey !== figmaFileUrl) prompt += `- 파일 키 (자동 추출): \`${figmaFileKey}\`\n`;
+        if (figmaPage) prompt += `- 삽입 페이지: \`${figmaPage}\`\n`;
+        if (figmaAnchorFrame) prompt += `- 기준 프레임: \`${figmaAnchorFrame}\` 오른쪽에 순서대로 배치\n`;
+        if (figmaX || figmaY) prompt += `- 시작 좌표: X=${figmaX || '0'}, Y=${figmaY || '0'}\n`;
+        if (figmaGap) prompt += `- 프레임 간격: ${figmaGap}px\n`;
+        prompt += '\n';
+      } else {
+        prompt += `피그마에 새로운 섹션을 만들어 메뉴 순서대로 기획서 프레임을 배치해 주세요.\n`;
+        prompt += `각 메뉴는 자동 레이아웃 기준으로 80px 간격을 두고 배치합니다.\n\n`;
+      }
+
+      prompt += `### 작성 규칙\n\n`;
+      prompt += isHtml
+        ? `각 메뉴(${menus.map(m => m.name).join(', ')})에 대해 아래 구성으로 HTML 파일을 생성해 주세요.\n\n`
+        : `각 메뉴(${menus.map(m => m.name).join(', ')})에 대해 아래 순서로 피그마 프레임을 생성해 주세요.\n\n`;
+      prompt += `**포함할 산출물**:\n`;
+      outputs.forEach(o => { prompt += `- ${outputLabel[o] || o}\n`; });
+      prompt += `\n**기획서 상세 수준**: ${detailLabel}\n\n`;
+
+      prompt += `**메뉴별 작성 순서**:\n`;
+      menus.forEach((menu, i) => {
+        prompt += `\n**${i + 1}. [${menu.name}]**\n`;
+        if (isHtml) {
+          prompt += `1. 파일 생성 — \`${name}_${menu.name}.html\`\n`;
+        } else {
+          prompt += `1. 프레임 생성 — 화면 이름: \`${menu.name}\`\n`;
+        }
+        if (outputs.includes('wireframe')) {
+          prompt += `2. 와이어프레임 작성\n`;
+          prompt += `   ⚠️ 기능별로 화면을 쪼개거나 섹션을 분리하지 말 것. 아래 기능들이 모두 하나의 화면 안에 자연스럽게 배치된 실제 UI처럼 그린다.\n`;
+          prompt += `   - 상단: 네비게이션 / 헤더 영역\n`;
+          if (isNxui) {
+            prompt += `   - 본문: NXUI MCP의 컴포넌트(버튼, 인풋, 카드, 리스트 등)를 불러와 아래 기능을 하나의 화면에 통합 구현\n`;
+          } else if (isUiMcpCustom) {
+            prompt += `   - 본문: ${uiMcpCustomName}의 컴포넌트를 활용해 아래 기능을 하나의 화면에 통합 구현\n`;
+          } else if (isCustom) {
+            prompt += `   - 본문: ${customToolName}의 컴포넌트/기능을 활용해 아래 기능을 하나의 화면에 통합 구현\n`;
+          } else {
+            prompt += `   - 본문: 아래 기능을 하나의 화면에 통합하여 UI로 구현\n`;
+          }
+          menu.features.forEach(f => {
+            prompt += `     - ${f.name}\n`;
+            if (f.desc) prompt += `       > ${f.desc}\n`;
+          });
+          if (menu.submenus && menu.submenus.length > 0) {
+            menu.submenus.forEach(sub => {
+              prompt += `     ↳ [서브메뉴: ${sub.name}]\n`;
+              sub.features.forEach(sf => { prompt += `       - ${sf.name}${sf.desc ? ' (' + sf.desc + ')' : ''}\n`; });
+            });
+          }
+          prompt += `   - 하단: 탭바 / CTA 버튼 (필요 시)\n`;
+          if (isHtml) {
+            prompt += `3. 상태별 화면 분기 처리 (탭 전환 또는 섹션으로 구분)\n`;
+            prompt += `   → 각 탭 제목: \`기본\`, \`에러\`, \`빈 화면\`\n\n`;
+            prompt += `   **[기본 탭] 상세 명세 (Claude가 초안 작성)**\n`;
+            prompt += `   - 정상 데이터가 표시되는 기본 화면을 구현\n`;
+            prompt += `   - 각 UI 요소에 대해 다음을 서술한다:\n`;
+            prompt += `     - 클릭/탭 시 동작 (ex. 버튼 클릭 → 다음 화면 이동 / 모달 오픈 / API 호출 등)\n`;
+            prompt += `     - 호버·포커스·비활성(disabled) 등 인터랙션 상태\n`;
+            prompt += `     - 데이터 바인딩 방식 (예: API 응답값 표시, 포맷 변환 등)\n`;
+            prompt += `   - 사용자 입력을 받는 모든 필드(인풋·텍스트에어리어·셀렉트·체크박스 등)에는 입력 정책을 옆에 함께 명시:\n`;
+            prompt += `     - 최소/최대 글자 수 (예: 1~50자)\n`;
+            prompt += `     - 허용 문자 종류 (예: 한글·영문·숫자, 특수문자 불가 등)\n`;
+            prompt += `     - 실시간 유효성 검사 여부 및 오류 표시 위치\n`;
+            prompt += `     - placeholder 텍스트 (서비스 맥락에 맞게 Claude가 초안 제시)\n\n`;
+            prompt += `   **[에러 탭] 상세 명세 (Claude가 초안 작성)**\n`;
+            prompt += `   - 이 화면에서 발생할 수 있는 에러 케이스를 모두 나열하고 각각 화면을 구현:\n`;
+            prompt += `     | 에러 코드 | 상황 | 안내 문구 | 표기 방식 |\n`;
+            prompt += `     |-----------|------|-----------|----------|\n`;
+            prompt += `     | 400 | 잘못된 요청 | 서비스 맥락에 맞게 Claude가 초안 작성 | 인라인 토스트 / 전체 화면 중 선택 |\n`;
+            prompt += `     | 401 | 인증 만료 | 서비스 맥락에 맞게 Claude가 초안 작성 | 모달 또는 페이지 이동 |\n`;
+            prompt += `     | 403 | 권한 없음 | 서비스 맥락에 맞게 Claude가 초안 작성 | 전체 화면 안내 |\n`;
+            prompt += `     | 404 | 리소스 없음 | 서비스 맥락에 맞게 Claude가 초안 작성 | 전체 화면 안내 |\n`;
+            prompt += `     | 500 | 서버 오류 | 서비스 맥락에 맞게 Claude가 초안 작성 | 전체 화면 안내 + 재시도 버튼 |\n`;
+            prompt += `     | 네트워크 오류 | 오프라인 / 타임아웃 | 서비스 맥락에 맞게 Claude가 초안 작성 | 전체 화면 안내 + 재시도 버튼 |\n`;
+            prompt += `   - 기본 화면 대비 추가되거나 변경된 요소는 반드시 어노테이션으로 표기한다\n`;
+            prompt += `   - 안내 문구·아이콘·CTA 버튼(재시도, 홈으로 등)을 서비스 톤앤매너에 맞게 Claude가 직접 초안 작성\n\n`;
+            prompt += `   **[빈 화면 탭] 상세 명세 (Claude가 초안 작성)**\n`;
+            prompt += `   - 데이터가 없거나 검색 결과가 없을 때 화면\n`;
+            prompt += `   - 일러스트/아이콘 영역, 안내 문구, CTA 버튼(있을 경우)을 서비스 맥락에 맞게 초안 작성\n`;
+          } else {
+            prompt += `3. 상태별 화면 분기 처리 (각 상태를 별도 프레임으로 작성)\n`;
+            prompt += `   → 프레임 이름 형식: \`[${name}] ${menu.name} - 기본\`, \`… - 에러\`, \`… - 빈 화면\`\n\n`;
+            prompt += `   **[기본 상태] 상세 명세 (Claude가 초안 작성)**\n`;
+            prompt += `   - 정상 데이터가 표시되는 기본 화면을 구현\n`;
+            prompt += `   - 각 UI 요소에 대해 다음을 어노테이션으로 서술한다:\n`;
+            prompt += `     - 클릭/탭 시 동작 (ex. 버튼 클릭 → 다음 화면 이동 / 모달 오픈 / API 호출 등)\n`;
+            prompt += `     - 호버·포커스·비활성(disabled) 등 인터랙션 상태\n`;
+            prompt += `     - 데이터 바인딩 방식 (예: API 응답값 표시, 포맷 변환 등)\n`;
+            prompt += `   - 사용자 입력을 받는 모든 필드(인풋·텍스트에어리어·셀렉트·체크박스 등)에는 입력 정책을 어노테이션 또는 인접 메모로 명시:\n`;
+            prompt += `     - 최소/최대 글자 수 (예: 1~50자)\n`;
+            prompt += `     - 허용 문자 종류 (예: 한글·영문·숫자, 특수문자 불가 등)\n`;
+            prompt += `     - 실시간 유효성 검사 여부 및 오류 표시 위치\n`;
+            prompt += `     - placeholder 텍스트 (서비스 맥락에 맞게 Claude가 초안 제시)\n\n`;
+            prompt += `   **[에러 상태] 상세 명세 (Claude가 초안 작성)**\n`;
+            prompt += `   - 이 화면에서 발생할 수 있는 에러 케이스를 모두 나열하고 각각 화면을 구현:\n`;
+            prompt += `     | 에러 코드 | 상황 | 안내 문구 | 표기 방식 |\n`;
+            prompt += `     |-----------|------|-----------|----------|\n`;
+            prompt += `     | 400 | 잘못된 요청 | 서비스 맥락에 맞게 Claude가 초안 작성 | 인라인 토스트 / 전체 화면 중 선택 |\n`;
+            prompt += `     | 401 | 인증 만료 | 서비스 맥락에 맞게 Claude가 초안 작성 | 모달 또는 페이지 이동 |\n`;
+            prompt += `     | 403 | 권한 없음 | 서비스 맥락에 맞게 Claude가 초안 작성 | 전체 화면 안내 |\n`;
+            prompt += `     | 404 | 리소스 없음 | 서비스 맥락에 맞게 Claude가 초안 작성 | 전체 화면 안내 |\n`;
+            prompt += `     | 500 | 서버 오류 | 서비스 맥락에 맞게 Claude가 초안 작성 | 전체 화면 안내 + 재시도 버튼 |\n`;
+            prompt += `     | 네트워크 오류 | 오프라인 / 타임아웃 | 서비스 맥락에 맞게 Claude가 초안 작성 | 전체 화면 안내 + 재시도 버튼 |\n`;
+            prompt += `   - 기본 화면 대비 추가되거나 변경된 요소는 반드시 별도 어노테이션으로 표기한다\n`;
+            prompt += `   - 안내 문구·아이콘·CTA 버튼(재시도, 홈으로 등)을 서비스 톤앤매너에 맞게 Claude가 직접 초안 작성\n\n`;
+            prompt += `   **[빈 화면 (Empty State)] 상세 명세 (Claude가 초안 작성)**\n`;
+            prompt += `   - 데이터가 없거나 검색 결과가 없을 때 화면\n`;
+            prompt += `   - 일러스트/아이콘 영역, 안내 문구, CTA 버튼(있을 경우)을 서비스 맥락에 맞게 초안 작성\n`;
+          }
+        }
+        if (outputs.includes('flow')) {
+          prompt += `3. 유저 플로우 — 이 화면에서 이동 가능한 경로와 주요 분기점 표시\n`;
+        }
+        if (outputs.includes('annotation') && !isHtml) {
+          prompt += `4. 기능 어노테이션 프레임 — **화면 프레임과 완전히 분리된 독립 최상위 프레임으로 생성**\n`;
+          prompt += `   ⚠️ 어노테이션 내용을 화면 프레임 내부(자식 레이어)에 절대 넣지 말 것\n`;
+          prompt += `   ⚠️ Figma 레이어 패널 기준으로 화면 프레임과 동일한 depth의 별도 Frame이어야 함\n`;
+          prompt += `   - 프레임 이름: \`[${name}] ${menu.name} - 어노테이션\`\n`;
+          prompt += `   - 위치: 화면 프레임 오른쪽 바깥에 40px 간격을 두고 독립 배치 (화면 프레임 상단과 y축 정렬)\n`;
+          prompt += `   - **번호 부여 방식**: 와이어프레임 내 각 인터랙티브 요소(버튼·링크·인풋·아이콘 등)에 ①②③… 형태의 번호 뱃지를 요소 우상단에 겹쳐 표기\n`;
+          prompt += `   - **화면 프레임과 번호 일치**: 와이어프레임에 표기된 번호와 어노테이션 프레임의 항목 번호가 정확히 대응되어야 함\n`;
+          prompt += `   - 번호별 설명 항목: 번호 / 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
+          prompt += `   - 에러·빈 화면에서 기본 대비 달라진 요소는 별도 섹션으로 구분하여 동일 프레임 내 하단에 추가 (번호는 기본 화면 번호 이어서 부여)\n`;
+        } else if (outputs.includes('annotation') && isHtml) {
+          prompt += `4. 기능 어노테이션\n`;
+          prompt += `   **[번호 뱃지 공통 규칙]**\n`;
+          prompt += `   - 와이어프레임 내 각 인터랙티브 요소 우상단에 ①②③… 번호 뱃지를 겹쳐 표기\n`;
+          prompt += `   - 번호 뱃지는 CSS \`position: absolute; z-index: 9999\`로 항상 최상위에 렌더링 — 다른 UI 요소에 절대 가려지지 않아야 함\n`;
+          prompt += `   - 에러·빈 화면에서 기본 화면과 달라진 요소에도 어노테이션 추가 (번호 이어서 부여)\n\n`;
+          prompt += `   **[팝업·모달 내 어노테이션 규칙]**\n`;
+          prompt += `   - 화면 내 팝업, 모달, 드로어, 드롭다운 등 오버레이 요소가 있는 경우, 해당 오버레이 안의 인터랙티브 요소에도 번호 뱃지를 부여한다\n`;
+          prompt += `   - 오버레이 내 번호 뱃지와 설명은 **오버레이가 열려 있을 때만 표시**되어야 함 (오버레이 닫히면 함께 숨겨짐)\n`;
+          prompt += `   - 오버레이 내 번호는 기존 화면 번호에 이어서 부여 (예: 기본 화면 ①~⑤ 이후 팝업 ⑥⑦…)\n\n`;
+          if (htmlAnnoStyle === 'tooltip') {
+            prompt += `   **[표시 방식: 번호 클릭 시 팝업(툴팁)]**\n`;
+            prompt += `   - 번호 뱃지 클릭 시 해당 요소 설명이 툴팁으로 나타나도록 구현 (CSS/JS)\n`;
+            prompt += `   - 툴팁 내용: 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
+            prompt += `   - 툴팁은 화면 밖으로 잘리지 않도록 위치 자동 조정, 다른 곳 클릭 시 닫힘\n`;
+            prompt += `   - 툴팁 z-index는 번호 뱃지보다 높게 설정 (뱃지 위에 겹쳐 표시 가능)\n`;
+          } else {
+            prompt += `   **[표시 방식: 화면 하단 고정 패널]**\n`;
+            prompt += `   - 화면 하단에 어노테이션 패널을 고정 배치 (sticky 또는 fixed), 번호와 설명을 테이블로 정리\n`;
+            prompt += `   - 번호별 설명 항목: 번호 / 요소명 / 클릭·입력 시 동작 / 연결 화면 또는 API / 비고\n`;
+            prompt += `   - 패널의 번호와 와이어프레임의 번호가 정확히 대응되어야 함\n`;
+            prompt += `   - 팝업·모달이 열리면 해당 오버레이 내 요소의 어노테이션이 패널에 추가 노출, 닫히면 제거\n`;
+          }
+        }
+        if (outputs.includes('policy')) {
+          prompt += `5. 정책 메모 — 노션 문서에서 이 화면에 적용되는 정책 항목을 \`[정책]\` 태그로 표시\n`;
+        }
+        if (outputs.includes('component')) {
+          prompt += `6. 컴포넌트 목록 — 사용된 UI 컴포넌트를 별도 목록 박스로 정리\n`;
+        }
+      });
+
+      prompt += `\n### 공통 디자인 가이드\n\n`;
+      prompt += `- 프레임 크기: ${serviceType && serviceType.includes('모바일') ? '390×844px (모바일)' : '1280×900px (웹) 또는 390×844px (모바일) 중 서비스 유형에 맞게 선택'}\n`;
+      prompt += `- 텍스트 스타일: 제목(Bold 16–20px), 본문(Regular 14px), 캡션(12px)\n`;
+      prompt += `- 컬러: 그레이스케일 기반 와이어프레임 (선택 요소에만 accent 색상 사용)\n`;
+      prompt += `- Auto Layout 적극 사용 (반응형 대응)\n`;
+      prompt += `- 각 프레임 이름 형식: \`[${name}] {메뉴명} - {화면명}\`\n`;
+      prompt += `\n### 화면 구성 원칙\n\n`;
+      prompt += `⚠️ **프레임 분리 기준은 "메뉴 × 상태"만 허용한다. 기능 단위로 프레임이나 섹션을 나누지 않는다.**\n\n`;
+      if (isHtml) {
+        prompt += `**HTML 파일 구조**:\n`;
+        prompt += `- 파일 1개 = 메뉴 1개의 전체 화면 (모든 기능이 하나의 화면 안에 표현됨)\n`;
+        prompt += `- 상태 탭(기본 / 에러 / 빈 화면)으로만 구분 — 탭 클릭 시 화면 전환\n`;
+        prompt += `- 각 탭 안에서 기능들은 실제 서비스 화면처럼 자연스럽게 배치 (기능별 박스/카드 분리 금지)\n\n`;
+        prompt += `**어노테이션·부연 설명 위치**:\n`;
+        prompt += `- 와이어프레임 하단 또는 우측에 하나의 통합 어노테이션 영역을 배치\n`;
+        prompt += `- ①②③ 번호가 와이어프레임 요소와 대응되는 번호 테이블 형식으로 정리\n`;
+        prompt += `- 입력 정책·에러 케이스는 어노테이션 영역 하단에 테이블로 이어서 정리\n`;
+      } else {
+        prompt += `**Figma 프레임 구조**:\n`;
+        prompt += `- 프레임 1개 = 메뉴 1개 × 상태 1개 (기본 / 에러 / 빈 화면)\n`;
+        prompt += `- 하나의 메뉴에서 나오는 프레임 수: 최대 3개 (기본·에러·빈 화면)\n`;
+        prompt += `- 기능별로 프레임·Section·Group을 분리하지 않는다\n`;
+        prompt += `- 기능들은 실제 서비스 UI처럼 하나의 프레임 안에 자연스럽게 배치\n\n`;
+        prompt += `**상태별 프레임 배치**:\n`;
+        prompt += `- 기본 / 에러 / 빈 화면 프레임을 가로로 나란히 배치, 프레임 간 간격 80px\n`;
+        prompt += `- 묶음 전체를 하나의 Section으로 감싸고 이름: \`[${name}] {메뉴명} — 상태별 화면\`\n\n`;
+        prompt += `**에러 케이스·입력 정책 표기**:\n`;
+        prompt += `- 에러 프레임 하단 여백 또는 어노테이션 프레임 내에 테이블로 정리 (프레임 추가 생성 금지)\n`;
+        prompt += `- 입력 정책도 어노테이션 프레임 내 하단 테이블로 이어서 정리\n`;
+      }
+
+      if (extraRequests) {
+        prompt += `\n## 💬 추가 요청사항\n\n`;
+        extraRequests.split('\n').forEach(line => { if (line.trim()) prompt += `- ${line}\n`; });
+      }
+
+      prompt += `\n---\n\n`;
+      prompt += `> **작업 순서 요약**\n`;
+      let step = 1;
+      if (notionPages.length > 0) {
+        prompt += `> ${step++}. 노션 정책 문서 ${notionPages.length}개를 모두 읽는다 (Notion MCP 사용)\n`;
+        prompt += `> ${step++}. 정책 내용을 파악하고 각 메뉴·기능과 연관된 정책을 정리한다\n`;
+      }
+      if (isNxui) {
+        prompt += `> ${step++}. NXUI MCP 연결을 확인하고 사용 가능한 컴포넌트 목록을 파악한다\n`;
+        prompt += `> ${step++}. **[생성 테스트]** 첫 번째 메뉴(${menus[0]?.name || '첫 메뉴'})의 프레임 1개만 먼저 생성하여 Figma MCP + NXUI MCP 동작을 검증한다\n`;
+        prompt += `>    - 테스트 프레임 이름: \`[TEST] ${menus[0]?.name || '테스트'}\`\n`;
+        prompt += `>    - 프레임이 정상 생성되고 컴포넌트가 올바르게 렌더링되는지 확인 후 사용자에게 결과를 보고한다\n`;
+        prompt += `>    - 테스트 통과 시에만 나머지 전체 메뉴 기획서 생성을 진행한다\n`;
+        prompt += `>    - 실패 시 오류 원인을 분석하고 해결 방법을 사용자에게 보고한 뒤 대기한다\n`;
+        prompt += `> ${step++}. 테스트 통과 후 메뉴 순서대로 기획서 프레임 전체를 생성한다 (Figma MCP + NXUI MCP 사용)\n`;
+      } else if (isUiMcpCustom) {
+        prompt += `> ${step++}. ${uiMcpCustomName} 설치·연결 방법을 검색하고 연결을 완료한다\n`;
+        prompt += `> ${step++}. ${uiMcpCustomName}의 사용 가능한 컴포넌트 목록을 파악한다\n`;
+        prompt += `> ${step++}. **[생성 테스트]** 첫 번째 메뉴(${menus[0]?.name || '첫 메뉴'})의 프레임 1개만 먼저 생성하여 Figma MCP + ${uiMcpCustomName} 동작을 검증한다\n`;
+        prompt += `>    - 테스트 통과 시에만 나머지 전체 메뉴 기획서 생성을 진행한다\n`;
+        prompt += `>    - 실패 시 오류 원인을 분석하고 해결 방법을 사용자에게 보고한 뒤 대기한다\n`;
+        prompt += `> ${step++}. 테스트 통과 후 메뉴 순서대로 기획서 프레임 전체를 생성한다 (Figma MCP + ${uiMcpCustomName} 사용)\n`;
+      } else if (isCustom) {
+        prompt += `> ${step++}. ${customToolName} 설치·연결 방법을 검색하고 연결을 완료한다\n`;
+        prompt += `> ${step++}. ${customToolName}의 사용 가능한 기능·컴포넌트를 파악한다\n`;
+        prompt += `> ${step++}. 메뉴 순서대로 피그마에 기획서 프레임을 생성한다 (${customToolName} 사용)\n`;
+      } else if (!isHtml) {
+        prompt += `> ${step++}. **[생성 테스트]** 첫 번째 메뉴(${menus[0]?.name || '첫 메뉴'})의 프레임 1개만 먼저 생성하여 Figma MCP 동작을 검증한다\n`;
+        prompt += `>    - 테스트 프레임 이름: \`[TEST] ${menus[0]?.name || '테스트'}\`\n`;
+        prompt += `>    - 프레임이 정상 생성되는지 확인 후 사용자에게 결과를 보고한다\n`;
+        prompt += `>    - 테스트 통과 시에만 나머지 전체 메뉴 기획서 생성을 진행한다\n`;
+        prompt += `>    - 실패 시 오류 원인을 분석하고 해결 방법을 사용자에게 보고한 뒤 대기한다\n`;
+        prompt += `> ${step++}. 테스트 통과 후 메뉴 순서대로 기획서 프레임 전체를 생성한다 (Figma MCP 사용)\n`;
+      }
+      if (isHtml) {
+        prompt += `> ${step++}. 각 HTML 파일에 와이어프레임 + 상태별 탭(기본/에러/빈 화면) + 어노테이션${notionPages.length > 0 ? ' + 정책 메모' : ''}를 작성한다\n`;
+        prompt += `>    - 기본 탭: UI 요소별 클릭 동작·인터랙션 상태·입력 정책을 상세 서술 (초안 직접 작성)\n`;
+        prompt += `>    - 에러 탭: 에러 케이스(400/401/403/404/500/네트워크 오류) 목록 + 서비스 맥락에 맞는 안내 문구 초안 + 기본 대비 변경 요소 어노테이션\n`;
+        prompt += `>    - 빈 화면 탭: 서비스 맥락에 맞는 empty state 문구·CTA 초안 작성\n`;
+        prompt += `> ${step++}. 모든 HTML 파일 생성 완료 후 파일 목록과 열람 방법을 안내한다\n`;
+      } else {
+        prompt += `> ${step++}. 각 메뉴마다 화면 프레임(기본/에러/빈 화면)을 생성한다\n`;
+        prompt += `>    - 기본 상태: UI 요소별 클릭 동작·인터랙션 상태·입력 정책 상세 서술 (초안 직접 작성)\n`;
+        prompt += `>    - 에러 상태: 에러 케이스(400/401/403/404/500/네트워크 오류) 목록 + 서비스 맥락에 맞는 안내 문구 초안 + 기본 대비 변경 요소 어노테이션\n`;
+        prompt += `>    - 빈 화면: 서비스 맥락에 맞는 empty state 문구·CTA 초안 작성\n`;
+        if (outputs.includes('annotation')) {
+          prompt += `> ${step++}. 각 메뉴마다 어노테이션 프레임(\`[${name}] {메뉴명} - 어노테이션\`)을 화면 프레임 오른쪽 바깥에 **독립 최상위 프레임**으로 별도 생성한다 (화면 프레임 내부에 넣지 않음)${notionPages.length > 0 ? ' + 정책 메모 포함' : ''}\n`;
+        }
+        prompt += `> ${step++}. 모든 프레임 작성 완료 후 피그마 링크를 공유한다\n`;
+      }
+
+      document.getElementById('resultBody').textContent = prompt;
+
+      // how-to 문구 동적 업데이트
+      const step2 = document.getElementById('howToStep2');
+      if (isHtml && isNxui) {
+        step2.innerHTML = `Claude가 <strong style="color:var(--text)">Notion MCP</strong>로 정책 문서를 읽고, <strong style="color:var(--text)">NXUI MCP</strong>로 넥슨 디자인 시스템 컴포넌트를 활용해 메뉴별 <strong style="color:var(--text)">HTML 기획서 파일</strong>을 생성합니다.`;
+      } else if (isHtml) {
+        step2.innerHTML = `Claude가 <strong style="color:var(--text)">Notion MCP</strong>로 정책 문서를 읽고, 메뉴별 <strong style="color:var(--text)">HTML 기획서 파일</strong>을 직접 생성합니다. 별도 MCP 연결이 필요 없습니다.`;
+      } else if (isNxui) {
+        step2.innerHTML = `Claude가 <strong style="color:var(--text)">Notion MCP</strong>로 정책 문서를 읽고, <strong style="color:var(--text)">NXUI MCP</strong> + <strong style="color:var(--text)">Figma MCP</strong>로 넥슨 디자인 시스템 컴포넌트 기반의 기획서를 자동 생성합니다.`;
+      } else {
+        step2.innerHTML = `Claude가 <strong style="color:var(--text)">Notion MCP</strong>로 정책 문서를 읽고, <strong style="color:var(--text)">Figma MCP</strong>로 기획서 프레임을 자동 생성합니다.`;
+      }
+
+      const card = document.getElementById('resultCard');
+      card.classList.add('visible');
+      // 프롬프트 탭을 기본으로 활성화
+      switchResultTab('prompt', document.getElementById('tabBtnPrompt'));
+      checkDirty();
+      // LNB: 프롬프트 생성하기 섹션 활성화
+      document.getElementById('setupSection').style.display = 'none';
+      document.getElementById('promptSection').style.display = 'block';
+      setLnbActive('prompt');
+      setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+    }
+
+    // ── Copy ──
+    function copyPrompt(btn) {
+      const text = document.getElementById('resultBody').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.classList.add('copied');
+        btn.textContent = '✅ 복사됨';
+        setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋 복사'; }, 2000);
+      });
+    }
+
+    // ── Download ──
+    function downloadPrompt() {
+      const text = document.getElementById('resultBody').textContent;
+      const projectName = document.getElementById('projectName').value.trim() || 'project';
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${projectName}_기획서_프롬프트.txt`;
+      a.click();
+    }
+
+    // ── Reset all ──
+    function resetAll() {
+      if (!confirm('입력된 내용과 생성된 프롬프트가 모두 삭제됩니다. 계속할까요?')) return;
+
+      // 기본 정보
+      ['projectName','serviceType','projectConcept','targetUser','extraRequests'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+
+      // 메뉴 초기화
+      document.getElementById('menuList').innerHTML = '';
+      menuCount = 0;
+      subCount = 0;
+      addMenu();
+      addMenu();
+
+      // 노션 토글 OFF + 페이지 초기화
+      const notionToggle = document.getElementById('notionToggle');
+      if (notionToggle.checked) {
+        notionToggle.checked = false;
+        toggleNotion();
+      }
+      document.getElementById('notionPageList').innerHTML = '';
+      notionCount = 0;
+      const syncUrlEl = document.getElementById('notionSyncUrl');
+      if (syncUrlEl) syncUrlEl.value = '';
+
+      // 출력 설정 기본값 복원
+      document.querySelectorAll('input[name="output"]').forEach(inp => {
+        inp.checked = ['wireframe','annotation','policy'].includes(inp.value);
+      });
+      // 그리기 도구 Figma로 복원
+      document.querySelectorAll('input[name="drawTool"]').forEach(inp => {
+        inp.checked = inp.value === 'figma';
+      });
+      document.getElementById('figmaInfoBox').style.display  = 'block';
+      document.getElementById('nxuiInfoBox').style.display   = 'none';
+      document.getElementById('htmlInfoBox').style.display   = 'none';
+      document.getElementById('customToolBox').style.display = 'none';
+      document.getElementById('customToolName').value = '';
+      // UI MCP 초기화
+      const noneUiMcp = document.querySelector('input[name="uiMcp"][value="none"]');
+      if (noneUiMcp) { noneUiMcp.checked = true; onUiMcpChange(); }
+      if (document.getElementById('uiMcpCustomName')) document.getElementById('uiMcpCustomName').value = '';
+
+      // 피그마 위치 토글 OFF + 필드 초기화
+      const figmaToggle = document.getElementById('figmaToggle');
+      if (figmaToggle.checked) {
+        figmaToggle.checked = false;
+        toggleFigma();
+      }
+      ['figmaFileUrl','figmaPage','figmaAnchorFrame','figmaX','figmaY','figmaGap'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+
+      // 생성된 프롬프트 제거
+      document.getElementById('resultCard').classList.remove('visible');
+      document.getElementById('resultBody').textContent = '';
+      document.getElementById('mdPreviewArea').style.display = 'none';
+
+      document.querySelector('.btn-reset').classList.remove('dirty');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Test data fill ──
+    function fillTestData() {
+      // 1. 기본 정보
+      document.getElementById('projectName').value = '넥슨 마이페이지 리뉴얼 2.0';
+      document.getElementById('serviceType').value = '웹 서비스 (PC + 모바일 반응형)';
+      document.getElementById('projectConcept').value = '게임 유저들이 자신의 계정·캐릭터 정보를 한눈에 파악하고, 결제·재화·보안을 효율적으로 관리할 수 있는 마이페이지. 게이미피케이션 요소를 가미해 유저의 체류 시간을 높이는 방향으로 설계.';
+      document.getElementById('targetUser').value = '20~35세 국내 PC 온라인 게임 유저 (MAU 기준 활성 유저)';
+
+      // 2. 메뉴 초기화 후 테스트 메뉴 채우기
+      document.getElementById('menuList').innerHTML = '';
+      menuCount = 0;
+
+      addMenu('홈');
+      addMenu('마이페이지');
+      addMenu('결제 관리');
+      addMenu('게임 재화');
+
+      // 메뉴별 데이터 세팅 헬퍼
+      function setMenu(menuIdx, features, submenus) {
+        const menuItem = document.querySelectorAll('.menu-item')[menuIdx];
+        const mid = menuItem.dataset.id;
+
+        // 기존 빈 기능 행 제거 후 채우기
+        const featList = document.getElementById(`featList-${mid}`);
+        featList.innerHTML = '';
+        features.forEach(f => {
+          const tmp = document.createElement('div');
+          tmp.innerHTML = featureRowHtml();
+          const row = tmp.firstElementChild;
+          featList.appendChild(row);
+          row.querySelector('input[type="text"]').value = f.name;
+          if (f.desc) {
+            const descArea = row.querySelector('.feat-desc');
+            const btn = row.querySelector('.btn-toggle-desc');
+            descArea.value = f.desc;
+            descArea.classList.add('visible');
+            btn.textContent = '메모 −';
+            btn.classList.add('active');
+          }
+        });
+
+        // 서브메뉴
+        if (submenus) {
+          submenus.forEach(sm => {
+            addSubmenu(mid);
+            const subList = document.getElementById(`subList-${mid}`);
+            const subItem = subList.lastElementChild;
+            const sid = subItem.dataset.sid;
+            subItem.querySelector('.submenu-name').value = sm.name;
+
+            const subFeatList = document.getElementById(`subFeatList-${sid}`);
+            subFeatList.innerHTML = '';
+            sm.features.forEach(f => {
+              const tmp = document.createElement('div');
+              tmp.innerHTML = featureRowHtml();
+              const row = tmp.firstElementChild;
+              subFeatList.appendChild(row);
+              row.querySelector('input[type="text"]').value = f.name;
+              if (f.desc) {
+                const descArea = row.querySelector('.feat-desc');
+                const btn = row.querySelector('.btn-toggle-desc');
+                descArea.value = f.desc;
+                descArea.classList.add('visible');
+                btn.textContent = '메모 −';
+                btn.classList.add('active');
+              }
+            });
+          });
+        }
+      }
+
+      setMenu(0,
+        [
+          { name: '공지사항 / 이벤트 배너 슬라이드' },
+          { name: '내 게임 목록 바로가기', desc: '최근 7일 내 접속 게임 상단 노출, 미접속 게임은 하단 정렬' },
+          { name: '최근 접속 정보 표시 (날짜 / IP / 기기)' },
+        ],
+        [{ name: '이벤트 센터', features: [{ name: '진행 중 이벤트 목록' }, { name: '이벤트 참여 / 보상 수령 버튼' }] }]
+      );
+
+      setMenu(1,
+        [
+          { name: '프로필 정보 확인 및 수정' },
+          { name: '닉네임 변경', desc: '변경 횟수 제한 정책 표시 필요 (정책 문서 참고)' },
+          { name: '비밀번호 변경' },
+        ],
+        [{ name: '보안 설정', features: [{ name: '2차 인증(OTP) 등록·해제' }, { name: '로그인 기기 목록 및 원격 로그아웃' }] }]
+      );
+
+      setMenu(2,
+        [
+          { name: '결제 수단 등록 / 삭제 (카드, 간편결제)' },
+          { name: '결제 내역 조회', desc: '최근 3개월 기준, 게임별·기간별 필터 제공' },
+          { name: '정기 결제 관리 (구독 상품)' },
+        ],
+        [{ name: '환불 신청', features: [{ name: '환불 가능 항목 조회' }, { name: '환불 신청서 작성 및 제출', desc: '미성년자 결제 환불 시 법정대리인 동의 필요 — 정책 문서 참고' }] }]
+      );
+
+      setMenu(3,
+        [
+          { name: '보유 캐시 / 포인트 현황' },
+          { name: '재화 사용 내역', desc: '게임별 분류 탭, 최대 6개월 조회' },
+          { name: '선물함 (받은 아이템 / 캐시)' },
+        ],
+        null
+      );
+
+      // 3. 노션 토글 ON + 페이지 채우기
+      const notionToggle = document.getElementById('notionToggle');
+      if (!notionToggle.checked) {
+        notionToggle.checked = true;
+        toggleNotion();
+      }
+      document.getElementById('notionPageList').innerHTML = '';
+      notionCount = 0;
+      addNotionPage('결제 및 환불 정책', 'https://www.notion.so/nexon/payment-policy-xxxxxxxx', '미성년자 결제 제한, 환불 가능 기간 7일, 부분 환불 불가');
+      addNotionPage('계정 보안 정책', 'https://www.notion.so/nexon/account-security-xxxxxxxx', '');
+
+      // 4. 추가 요청사항
+      document.getElementById('extraRequests').value = '다크모드 기준으로 작성, 모바일 375px 프레임 포함, Auto Layout 사용, 로딩 스켈레톤 UI도 포함해줘';
+    }
+
+    // ── Dirty state detection ──
+    function checkDirty() {
+      const btn = document.querySelector('.btn-reset');
+      // 사용자가 직접 입력하는 텍스트 필드에 내용이 있으면 dirty
+      const hasText = ['projectName','serviceType','projectConcept','targetUser','extraRequests']
+        .some(id => document.getElementById(id).value.trim());
+      // 노션 토글 켜져 있으면 dirty
+      const notionOn = document.getElementById('notionToggle').checked;
+      // 결과 프롬프트가 출력된 상태면 dirty
+      const hasResult = document.getElementById('resultCard').classList.contains('visible');
+      btn.classList.toggle('dirty', hasText || notionOn || hasResult);
+    }
+
+    // 폼 전체에 이벤트 위임
+    document.addEventListener('input', checkDirty);
+    document.addEventListener('change', checkDirty);
+
+    // ── Init ──
+    onDrawToolChange(); // HTML 기본값 → Section5 비활성화 + uiMcpSection 표시
+    onUiMcpChange();    // NXUI 기본값 → uiMcpNxuiBox 표시
+    addMenu();
+    addMenu();
+    addNotionPage('결제 정책', '', '');
+  </script>
+</body>
+</html>
